@@ -8,10 +8,10 @@ import routes from "./routes/index.js";
 const app: Application = express();
 app.use(
   cors({
-    origin: "http://localhost:3001", // 👈 exact frontend origin
+    origin: "http://localhost:3000", // 👈 exact frontend origin
     credentials: true,               // 👈 REQUIRED for cookies
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
   })
 );
 app.use(express.json());

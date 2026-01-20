@@ -1,11 +1,34 @@
 'use client';
 
-import { useState } from 'react';
-import { useChat } from '@/hooks';
+import { useState, useEffect } from 'react';
+import { useChat, useSocket } from '@/hooks';
 
 export default function MessageInput() {
   const { activeConversationId, sendMessage } = useChat();
+  const { socket } = useSocket();
   const [inputValue, setInputValue] = useState('');
+  
+  // Track typing state with debounce
+  useEffect(() => {
+    if (!activeConversationId || !socket) return;
+    
+    if (inputValue.trim()) {
+      // Emit typing:start when user starts typing
+      socket.emit('typing:start', { conversationId: activeConversationId });
+      
+      // Clear any existing timeout
+      const timeoutId = setTimeout(() => {
+        // Emit typing:stop after user stops typing for 1.5 seconds
+        socket.emit('typing:stop', { conversationId: activeConversationId });
+      }, 1500);
+      
+      // Cleanup function to clear timeout
+      return () => clearTimeout(timeoutId);
+    } else {
+      // If input is empty, emit typing:stop
+      socket.emit('typing:stop', { conversationId: activeConversationId });
+    }
+  }, [inputValue, activeConversationId, socket]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

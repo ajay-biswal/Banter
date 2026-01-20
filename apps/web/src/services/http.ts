@@ -1,6 +1,16 @@
 import axios from 'axios';
 import { env } from '@/config/env';
 
+// Utility function to get cookie by name
+const getCookie = (name: string): string | undefined => {
+  if (typeof document === 'undefined') return undefined;
+  
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift();
+  return undefined;
+};
+
 export const http = axios.create({
   baseURL: env.API_BASE_URL,
   withCredentials: true,
@@ -12,6 +22,14 @@ export const http = axios.create({
 // Request interceptor
 http.interceptors.request.use(
   (config) => {
+    // Add CSRF token to requests that require it
+    const csrfToken = getCookie('csrf_token');
+    if (csrfToken && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method?.toUpperCase() || '')) {
+      config.headers = {
+        ...config.headers,
+        'X-CSRF-Token': csrfToken
+      };
+    }
     return config;
   },
   (error) => {

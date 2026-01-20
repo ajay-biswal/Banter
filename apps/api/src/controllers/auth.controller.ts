@@ -4,6 +4,7 @@ import { storeRefreshTokenIdentifier, validateRefreshTokenIdentifier, removeRefr
 import { createAccessToken, createRefreshToken, verifyRefreshToken } from '../utils/paseto.js';
 import { User } from '../models/user.model.js';
 import { getCurrentUser } from '../services/auth.service.js';
+import { generateCsrfToken } from '../utils/csrf.js';
 import argon2 from 'argon2';
 
 /**
@@ -28,6 +29,9 @@ export const register = async (req: Request, res: Response) => {
     const tokenIdentifierHash = await argon2.hash(Date.now().toString());
     await storeRefreshTokenIdentifier(userData.id, tokenIdentifierHash);
 
+    // Generate and set CSRF token
+    const csrfToken = generateCsrfToken();
+    
     // Set cookies
     res.cookie('access_token', accessToken, {
       httpOnly: true,
@@ -40,6 +44,13 @@ export const register = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: 'strict',
+    });
+    
+    res.cookie('csrf_token', csrfToken, {
+      httpOnly: false, // Needs to be accessible by frontend JavaScript
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
       sameSite: 'strict',
     });
 
@@ -71,6 +82,9 @@ export const login = async (req: Request, res: Response) => {
     const tokenIdentifierHash = await argon2.hash(Date.now().toString());
     await storeRefreshTokenIdentifier(userData.id, tokenIdentifierHash);
 
+    // Generate and set CSRF token
+    const csrfToken = generateCsrfToken();
+    
     // Set cookies
     res.cookie('access_token', accessToken, {
       httpOnly: true,
@@ -83,6 +97,13 @@ export const login = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: 'strict',
+    });
+    
+    res.cookie('csrf_token', csrfToken, {
+      httpOnly: false, // Needs to be accessible by frontend JavaScript
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
       sameSite: 'strict',
     });
 
@@ -143,6 +164,9 @@ export const refreshTokens = async (req: Request, res: Response) => {
     const newTokenIdentifierHash = await argon2.hash(Date.now().toString());
     await storeRefreshTokenIdentifier(user._id.toString(), newTokenIdentifierHash);
 
+    // Generate and set CSRF token
+    const csrfToken = generateCsrfToken();
+    
     // Set new cookies
     res.cookie('access_token', newAccessToken, {
       httpOnly: true,
@@ -155,6 +179,13 @@ export const refreshTokens = async (req: Request, res: Response) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: 'strict',
+    });
+    
+    res.cookie('csrf_token', csrfToken, {
+      httpOnly: false, // Needs to be accessible by frontend JavaScript
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
       sameSite: 'strict',
     });
 

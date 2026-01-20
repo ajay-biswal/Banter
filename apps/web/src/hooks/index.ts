@@ -33,13 +33,16 @@ export const useChat = () => {
     conversations, 
     activeConversationId, 
     messagesByConversationId, 
+    userPresence,
+    typingUsersByConversation,
     setConversations, 
     setActiveConversation, 
     setMessages, 
     addMessage, 
     sendMessage, 
     reconcileMessage, 
-    markMessageFailed 
+    markMessageFailed,
+    upsertConversation
   } = useChatStore();
   
   // Add a retry function that uses the existing sendMessage function
@@ -62,6 +65,8 @@ export const useChat = () => {
     conversations,
     activeConversationId,
     messagesByConversationId,
+    userPresence,
+    typingUsersByConversation,
     setConversations,
     setActiveConversation,
     setMessages,
@@ -69,6 +74,7 @@ export const useChat = () => {
     sendMessage,
     reconcileMessage,
     markMessageFailed,
+    upsertConversation,
     retryMessage,
     getConversations: chatService.getConversations,
     getMessages: chatService.getMessages

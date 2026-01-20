@@ -134,6 +134,8 @@ interface ChatState {
   conversations: Conversation[];
   activeConversationId: string | null;
   messagesByConversationId: Record<string, Message[]>;
+  userPresence: Record<string, boolean>; // userId -> online status
+  typingUsersByConversation: Record<string, string[]>; // conversationId -> userIds currently typing
   setConversations: (conversations: Conversation[]) => void;
   setActiveConversation: (conversationId: string | null) => void;
   setMessages: (conversationId: string, messages: Message[]) => void;
@@ -141,12 +143,19 @@ interface ChatState {
   sendMessage: (conversationId: string, content: string) => void;
   reconcileMessage: (serverMessage: Message) => void;
   markMessageFailed: (clientMessageId: string) => void;
+  updateUserPresence: (userId: string, isOnline: boolean) => void;
+  addUserTyping: (conversationId: string, userId: string) => void;
+  removeUserTyping: (conversationId: string, userId: string) => void;
+  updateMessageStatus: (messageId: string, status: 'delivered' | 'read') => void;
+  upsertConversation: (conversation: Conversation) => void;
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
   conversations: [],
   activeConversationId: null,
   messagesByConversationId: {},
+  userPresence: {},
+  typingUsersByConversation: {},
 
   setConversations: (conversations) => set({ conversations }),
 
@@ -327,5 +336,125 @@ export const useChatStore = create<ChatState>((set, get) => ({
         messagesByConversationId: updatedMessagesByConversationId
       });
     }
+  },
+
+  updateUserPresence: (userId, isOnline) => {
+    set((state) => ({
+      userPresence: {
+        ...state.userPresence,
+        [userId]: isOnline
+      }
+    }));
+  },
+
+  addUserTyping: (conversationId, userId) => {
+    set((state) => {
+      const currentTypingUsers = state.typingUsersByConversation[conversationId] || [];
+      const updatedTypingUsers = [...new Set([...currentTypingUsers, userId])]; // Prevent duplicates
+      
+      return {
+        typingUsersByConversation: {
+          ...state.typingUsersByConversation,
+          [conversationId]: updatedTypingUsers
+        }
+      };
+    });
+  },
+
+  removeUserTyping: (conversationId, userId) => {
+    set((state) => {
+      const currentTypingUsers = state.typingUsersByConversation[conversationId] || [];
+      const updatedTypingUsers = currentTypingUsers.filter(id => id !== userId);
+      
+      return {
+        typingUsersByConversation: {
+          ...state.typingUsersByConversation,
+          [conversationId]: updatedTypingUsers
+        }
+      };
+    });
+  },
+
+  updateMessageStatus: (messageId, status) => {
+    set((state) => {
+      const updatedMessagesByConversationId = { ...state.messagesByConversationId };
+      
+      // Find the message across all conversations
+      for (const [conversationId, messages] of Object.entries(updatedMessagesByConversationId)) {
+        const messageIndex = messages.findIndex(msg => msg._id === messageId || msg.clientMessageId === messageId);
+        if (messageIndex !== -1) {
+          const updatedMessages = [...messages];
+          updatedMessages[messageIndex] = {
+            ...updatedMessages[messageIndex],
+            status
+          };
+          
+          updatedMessagesByConversationId[conversationId] = updatedMessages;
+          break; // Found and updated the message
+        }
+      }
+      
+      return {
+        messagesByConversationId: updatedMessagesByConversationId
+      };
+    });
+  },
+
+  upsertConversation: (conversation) => {
+    set((state) => {
+      const existingIndex = state.conversations.findIndex(c => c._id === conversation._id);
+      
+      if (existingIndex >= 0) {
+        // Update existing conversation
+        const updatedConversations = [...state.conversations];
+        updatedConversations[existingIndex] = conversation;
+        
+        return { conversations: updatedConversations };
+      } else {
+        // Prepend new conversation
+        return { conversations: [conversation, ...state.conversations] };
+      }
+    });
   }
 }));
+
+// Add presence and typing listeners to socket
+socket.on('presence:update', (data: { userId: string; status: 'online' | 'offline'; lastSeen?: string }) => {
+  try {
+    useChatStore.getState().updateUserPresence(data.userId, data.status === 'online');
+  } catch (error) {
+    console.error('Error updating user presence:', error);
+  }
+});
+
+socket.on('typing:start', ({ conversationId, userId }: { conversationId: string; userId: string }) => {
+  try {
+    useChatStore.getState().addUserTyping(conversationId, userId);
+  } catch (error) {
+    console.error('Error adding user typing:', error);
+  }
+});
+
+socket.on('typing:stop', ({ conversationId, userId }: { conversationId: string; userId: string }) => {
+  try {
+    useChatStore.getState().removeUserTyping(conversationId, userId);
+  } catch (error) {
+    console.error('Error removing user typing:', error);
+  }
+});
+
+socket.on('message:delivered', (messageId: string) => {
+  try {
+    useChatStore.getState().updateMessageStatus(messageId, 'delivered');
+  } catch (error) {
+    console.error('Error updating message status (delivered):', error);
+  }
+});
+
+socket.on('message:read', (messageId: string) => {
+  try {
+    useChatStore.getState().updateMessageStatus(messageId, 'read');
+  } catch (error) {
+    console.error('Error updating message status (read):', error);
+  }
+});

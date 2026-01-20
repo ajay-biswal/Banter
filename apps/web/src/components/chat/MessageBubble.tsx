@@ -44,6 +44,14 @@ export default function MessageBubble({ message, isOwn }: MessageBubbleProps) {
               Retry
             </button>
           )}
+          {/* Show message status indicators for own messages */}
+          {isOwn && message.status !== 'sending' && message.status !== 'failed' && (
+            <span className="mr-1">
+              {message.status === 'sent' && '✓'}
+              {message.status === 'delivered' && '✓✓'}
+              {message.status === 'read' && <span className="text-blue-300">✓✓</span>}
+            </span>
+          )}
           <span>{new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
         </div>
       </div>

@@ -10,7 +10,7 @@ import {
  */
 export const createOrFetchConversation = async (req: Request, res: Response) => {
   const { recipientUserId } = req.body;
-  const userId = (req as any).user?.sub; // Get user ID from auth middleware
+  const userId = (req as any).user?.id; // Get user ID from auth middleware
 
   if (!recipientUserId) {
     return res.status(400).json({ message: 'Recipient user ID is required' });
@@ -28,7 +28,7 @@ export const createOrFetchConversation = async (req: Request, res: Response) => 
  * Get all conversations for the authenticated user
  */
 export const getUserChatConversations = async (req: Request, res: Response) => {
-  const userId = (req as any).user?.sub; // Get user ID from auth middleware
+  const userId = (req as any).user?.id; // Get user ID from auth middleware
 
   try {
     const conversations = await getUserConversations(userId);
@@ -43,7 +43,7 @@ export const getUserChatConversations = async (req: Request, res: Response) => {
  */
 export const getConversationMessagesController = async (req: Request, res: Response) => {
   const { conversationId } = req.params;
-  const userId = (req as any).user?.sub; // Get user ID from auth middleware
+  const userId = (req as any).user?.id; // Get user ID from auth middleware
   const { limit, cursor } = req.query;
 
   if (!conversationId) {
