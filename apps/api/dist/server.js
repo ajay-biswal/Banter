@@ -11,7 +11,8 @@ const startServer = async () => {
             console.log(`Server running on port ${env.PORT}`);
         });
         // Initialize Socket.IO
-        initSocket(server);
+        const io = initSocket(server);
+        app.set("io", io);
         // Graceful shutdown
         process.on("SIGTERM", () => {
             console.log("SIGTERM received. Shutting down...");

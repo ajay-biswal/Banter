@@ -5,7 +5,12 @@ import { csrfMiddleware } from "./middlewares/csrf.middleware.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import routes from "./routes/index.js";
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: "http://localhost:3000", // 👈 exact frontend origin
+    credentials: true, // 👈 REQUIRED for cookies
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // Add cookie parser middleware

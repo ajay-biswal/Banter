@@ -8,9 +8,25 @@ import {
   markMessagesRead, 
   markConversationMessagesRead 
 } from '../services/readReceipt.service.js';
+import { encryptMessage, decryptMessage } from '../utils/encryption.js';
 
 // Simple in-memory typing state per socket
 const typingState = new Map<string, Set<string>>(); // socket.id -> Set of conversationIds
+
+const serializeMessage = (message: any) => ({
+  _id: message._id.toString(),
+  conversationId: message.conversationId.toString(),
+  senderId: message.senderId.toString(),
+  content: message.content,
+  type: message.type,
+  status: message.status,
+  createdAt: message.createdAt,
+  updatedAt: message.updatedAt,
+  clientId: message.clientId,
+  clientMessageId: message.clientId,
+  attachments: message.attachments,
+  metadata: message.metadata
+});
 
 /**
  * Setup chat socket event handlers
@@ -19,10 +35,11 @@ export const setupChatHandlers = (io: Server, socket: Socket) => {
   // Handle sending a message
   socket.on('message:send', async (data, callback) => {
     try {
-      const { conversationId, content, type = 'text' } = data;
+      const { conversationId, content, type = 'text', clientId, clientMessageId, attachments } = data;
+      const dedupeClientId = clientId || clientMessageId;
 
-      if (!conversationId || !content) {
-        if (callback) callback({ success: false, message: 'Conversation ID and content are required' });
+      if (!conversationId) {
+        if (callback) callback({ success: false, message: 'Conversation ID is required' });
         return;
       }
 
@@ -40,16 +57,53 @@ export const setupChatHandlers = (io: Server, socket: Socket) => {
         return;
       }
 
+      if (dedupeClientId) {
+        const existingMessage = await Message.findOne({
+          conversationId,
+          senderId: userId,
+          clientId: dedupeClientId
+        });
+
+        if (existingMessage) {
+          if (callback) callback({ success: true, message: serializeMessage(existingMessage) });
+          return;
+        }
+      }
+
+      // Determine message type based on attachments
+      let messageType = type;
+      if (attachments && attachments.length > 0) {
+        // If has images, set type to image
+        const hasImages = attachments.some((a: any) => a.type?.startsWith('image/'));
+        messageType = hasImages ? 'image' : 'file';
+      }
+
+      // Encrypt message content before saving
+      const encrypted = content ? encryptMessage(content) : { content: '', iv: '' };
+
+      // DEBUG: Log encrypted content (REMOVE AFTER VERIFICATION)
+      console.log('🔐 Original content:', content);
+      console.log('🔐 Encrypted content:', encrypted.content.substring(0, 50) + '...');
+      console.log('🔐 IV:', encrypted.iv);
+
       // Create the message using the Message model
       const message = new Message({
         conversationId,
         senderId: userId,
-        content,
-        type,
-        status: 'sent'
+        content: encrypted.content,  // Store encrypted content
+        iv: encrypted.iv,            // Store IV for decryption
+        type: messageType,
+        status: 'sent',
+        clientId: dedupeClientId,
+        attachments: attachments && attachments.length > 0 ? attachments : undefined
       });
 
       await message.save();
+
+      // DEBUG: Verify what's stored in DB (REMOVE AFTER VERIFICATION)
+      const messageContent = message.content || '';
+      console.log('💾 Stored in DB - content:', messageContent.substring(0, 50) + '...');
+      console.log('💾 Stored in DB - iv:', message.iv || 'N/A');
 
       // Update the conversation's last message
       await Conversation.updateOne(
@@ -57,21 +111,26 @@ export const setupChatHandlers = (io: Server, socket: Socket) => {
         { lastMessage: message._id }
       );
 
-      // Emit the new message to all participants in the conversation room
-      // Exclude sender to prevent duplicate message display
-      socket.to(`conversation:${conversationId}`).emit('message:new', {
-        _id: message._id,
-        conversationId: message.conversationId,
-        senderId: message.senderId,
-        content: message.content,
-        type: message.type,
-        status: message.status,
-        createdAt: message.createdAt,
-        updatedAt: message.updatedAt
-      });
+      // Decrypt content before emitting to frontend
+      const messageObj = message.toObject();
+      const decryptedContent = (messageObj.iv && messageObj.content) 
+        ? decryptMessage(messageObj.content, messageObj.iv) 
+        : (messageObj.content || '');
+      
+      // DEBUG: Verify decryption (REMOVE AFTER VERIFICATION)
+      console.log('🔓 Decrypted content:', decryptedContent);
+      
+      const payload = {
+        ...serializeMessage(message),
+        content: decryptedContent  // Send decrypted content to frontend
+      };
+
+      // Emit the new message to ALL participants in the conversation room (INCLUDING sender)
+      // This ensures sender's optimistic message gets replaced with real message from server
+      io.to(`conversation:${conversationId}`).emit('message:new', payload);
 
       // Acknowledge the sender
-      if (callback) callback({ success: true, message: 'Message sent successfully', data: message });
+      if (callback) callback({ success: true, message: payload });
     } catch (error: any) {
       console.error('Error sending message:', error);
       if (callback) callback({ success: false, message: error.message || 'Failed to send message' });

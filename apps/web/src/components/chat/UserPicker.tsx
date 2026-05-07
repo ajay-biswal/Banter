@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useChat, useAuth } from '@/hooks';
 import { userService } from '@/services/user.service';
 import { http } from '@/services/http';
@@ -20,35 +20,39 @@ export default function UserPicker({ isOpen, onClose }: UserPickerProps) {
   const { upsertConversation, setActiveConversation } = useChat();
   const { user: currentUser } = useAuth();
 
-  useEffect(() => {
-    if (isOpen) {
-      loadUsers();
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    // Filter users based on search term
-    const filtered = users.filter(user =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredUsers(filtered);
-  }, [searchTerm, users]);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
       const fetchedUsers = await userService.getUsers();
+      const filteredUsers = fetchedUsers.filter((user) => user._id !== currentUser?._id);
       setUsers(fetchedUsers);
-      setFilteredUsers(fetchedUsers);
+      setFilteredUsers(filteredUsers);
     } catch (err) {
       console.error('Failed to fetch users:', err);
       setError('Failed to load users. Please try again.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUser?._id]);
+
+  useEffect(() => {
+    const query = searchTerm.toLowerCase();
+    const filtered = users.filter(user =>
+      user._id !== currentUser?._id &&
+      (
+        user.name.toLowerCase().includes(query) ||
+        user.email.toLowerCase().includes(query)
+      )
+    );
+    setFilteredUsers(filtered);
+  }, [currentUser?._id, searchTerm, users]);
+
+  useEffect(() => {
+    if (isOpen) {
+      loadUsers();
+    }
+  }, [isOpen, loadUsers]);
 
   const handleUserSelect = async (user: User) => {
     try {

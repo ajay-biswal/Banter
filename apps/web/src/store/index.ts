@@ -6,6 +6,41 @@ import { User } from '@/types';
 import { socket } from '@/socket/socket.client';
 import { Conversation, Message } from '@/types';
 
+type MessageAck = {
+  success: boolean;
+  message?: Message | string;
+  data?: Message;
+  error?: string;
+};
+
+const makeClientId = () => {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `client-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
+const getMessageClientId = (message: Message) => message.clientId || message.clientMessageId;
+
+const normalizeMessage = (message: Message): Message => {
+  const clientId = getMessageClientId(message);
+
+  return clientId
+    ? { ...message, clientId, clientMessageId: clientId }
+    : message;
+};
+
+const isSameMessage = (left: Message, right: Message) => {
+  const leftClientId = getMessageClientId(left);
+  const rightClientId = getMessageClientId(right);
+
+  return (
+    left._id === right._id ||
+    Boolean(leftClientId && rightClientId && leftClientId === rightClientId)
+  );
+};
+
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
@@ -30,7 +65,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true, 
         loading: false 
       });
-    } catch (error) {
+    } catch {
       set({ 
         user: null, 
         isAuthenticated: false, 
@@ -54,7 +89,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   logout: async () => {
     try {
       await authService.logout();
-    } catch (error) {
+    } catch {
       // Even if logout fails, clear local state
     } finally {
       set({ 
@@ -84,7 +119,7 @@ interface SocketState {
 }
 
 export const useSocketStore = create<SocketState>((set, get) => ({
-  socket: null,
+  socket,
   isConnected: false,
 
   connect: () => {
@@ -109,24 +144,11 @@ export const useSocketStore = create<SocketState>((set, get) => ({
 
 // Initialize socket and set up event listeners
 socket.on('connect', () => {
-  console.log('Socket connected');
-  useSocketStore.getState().socket = socket;
-  useSocketStore.getState().isConnected = true;
+  useSocketStore.setState({ socket, isConnected: true });
 });
 
 socket.on('disconnect', () => {
-  console.log('Socket disconnected');
-  useSocketStore.getState().isConnected = false;
-});
-
-// Socket event listeners for chat updates
-socket.on('message:new', (message: Message) => {
-  // Call chatStore.addMessage(message) to update the store
-  try {
-    useChatStore.getState().reconcileMessage(message);
-  } catch (error) {
-    console.error('Error adding message from socket:', error);
-  }
+  useSocketStore.setState({ isConnected: false });
 });
 
 // Chat Store
@@ -134,19 +156,25 @@ interface ChatState {
   conversations: Conversation[];
   activeConversationId: string | null;
   messagesByConversationId: Record<string, Message[]>;
-  userPresence: Record<string, boolean>; // userId -> online status
-  typingUsersByConversation: Record<string, string[]>; // conversationId -> userIds currently typing
+  userPresence: Record<string, boolean>;
+  typingUsersByConversation: Record<string, string[]>;
   setConversations: (conversations: Conversation[]) => void;
   setActiveConversation: (conversationId: string | null) => void;
   setMessages: (conversationId: string, messages: Message[]) => void;
   addMessage: (message: Message) => void;
-  sendMessage: (conversationId: string, content: string) => void;
+  sendMessage: (conversationId: string, content: string) => Promise<void>;
+  confirmMessage: (clientId: string, serverMessage: Message) => void;
   reconcileMessage: (serverMessage: Message) => void;
-  markMessageFailed: (clientMessageId: string) => void;
+  markFailed: (clientId: string) => void;
+  markMessageFailed: (clientId: string) => void;
+  updateConversationLastMessage: (message: Message) => void;
   updateUserPresence: (userId: string, isOnline: boolean) => void;
+  setUserOnline: (userId: string) => void;
+  setUserOffline: (userId: string) => void;
   addUserTyping: (conversationId: string, userId: string) => void;
   removeUserTyping: (conversationId: string, userId: string) => void;
   updateMessageStatus: (messageId: string, status: 'delivered' | 'read') => void;
+  markConversationMessagesAsRead: (conversationId: string, currentUserId: string) => void;
   upsertConversation: (conversation: Conversation) => void;
 }
 
@@ -161,182 +189,148 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
   setActiveConversation: (conversationId) => set({ activeConversationId: conversationId }),
 
-  setMessages: (conversationId, messages) => {
-    const { messagesByConversationId } = get();
-    set({ 
-      messagesByConversationId: { 
-        ...messagesByConversationId, 
-        [conversationId]: messages 
-      } 
-    });
-  },
-
-  addMessage: (message) => {
-    const { conversations, messagesByConversationId, activeConversationId } = get();
-    
-    // Check if message already exists
-    const existingMessages = messagesByConversationId[message.conversationId] || [];
-    const messageExists = existingMessages.some(msg => msg._id === message._id);
-    
-    if (messageExists) {
-      return; // Don't add duplicate
+  setMessages: (conversationId, messages) => set((state) => ({
+    messagesByConversationId: {
+      ...state.messagesByConversationId,
+      [conversationId]: messages.map(normalizeMessage)
     }
+  })),
 
-    // Update messages for the conversation
-    const updatedMessages = [...existingMessages, message];
-    const updatedMessagesByConversationId = {
-      ...messagesByConversationId,
-      [message.conversationId]: updatedMessages
-    };
+  addMessage: (message) => set((state) => {
+    const nextMessage = normalizeMessage(message);
+    const existingMessages = state.messagesByConversationId[message.conversationId] || [];
+    const existingIndex = existingMessages.findIndex((msg) => isSameMessage(msg, nextMessage));
+    const messages = existingIndex >= 0
+      ? existingMessages.map((msg, index) => index === existingIndex ? nextMessage : msg)
+      : [...existingMessages, nextMessage];
 
-    // Update conversations to reflect the new lastMessage
-    const updatedConversations = conversations.map(conv => {
-      if (conv._id === message.conversationId) {
-        return {
-          ...conv,
-          lastMessage: message,
-          updatedAt: message.createdAt
-        };
+    return {
+      conversations: state.conversations.map((conv) => (
+        conv._id === nextMessage.conversationId
+          ? { ...conv, lastMessage: nextMessage, updatedAt: nextMessage.createdAt }
+          : conv
+      )),
+      messagesByConversationId: {
+        ...state.messagesByConversationId,
+        [nextMessage.conversationId]: messages
       }
-      return conv;
-    });
+    };
+  }),
 
-    set({
-      conversations: updatedConversations,
-      messagesByConversationId: updatedMessagesByConversationId
-    });
-  },
-
-  sendMessage: (conversationId, content) => {
-    const { socket } = useSocketStore.getState();
-    const { messagesByConversationId } = get();
-    
-    // Generate clientMessageId
-    const clientMessageId = `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
-    // Create optimistic message
+  sendMessage: async (conversationId, content) => {
+    const clientId = makeClientId();
+    const now = new Date().toISOString();
+    const currentUserId = useAuthStore.getState().user?._id || '';
     const optimisticMessage: Message = {
-      _id: clientMessageId,
+      _id: clientId,
       conversationId,
-      senderId: '', // Will be filled by server
+      senderId: currentUserId,
       content,
       type: 'text',
       status: 'sending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      clientMessageId
+      createdAt: now,
+      updatedAt: now,
+      clientId,
+      clientMessageId: clientId
     };
 
-    // Insert optimistic message into messagesByConversationId
-    const existingMessages = messagesByConversationId[conversationId] || [];
-    const updatedMessages = [...existingMessages, optimisticMessage];
-    const updatedMessagesByConversationId = {
-      ...messagesByConversationId,
-      [conversationId]: updatedMessages
-    };
+    get().addMessage(optimisticMessage);
 
-    set({
-      messagesByConversationId: updatedMessagesByConversationId
+    await new Promise<void>((resolve, reject) => {
+      socket.timeout(10000).emit(
+        'message:send',
+        {
+          conversationId,
+          content,
+          clientId,
+          clientMessageId: clientId
+        },
+        (error: Error | null, ack?: MessageAck) => {
+          if (error || !ack?.success) {
+            get().markFailed(clientId);
+            reject(error || new Error(ack?.error || String(ack?.message || 'Failed to send message')));
+            return;
+          }
+
+          const serverMessage = typeof ack.message === 'object' ? ack.message : ack.data;
+
+          if (!serverMessage) {
+            get().markFailed(clientId);
+            reject(new Error('Message ACK did not include a server message'));
+            return;
+          }
+
+          get().confirmMessage(clientId, {
+            ...serverMessage,
+            clientId: serverMessage.clientId || serverMessage.clientMessageId || clientId,
+            clientMessageId: serverMessage.clientMessageId || serverMessage.clientId || clientId
+          });
+          resolve();
+        }
+      );
     });
-
-    // Call socket.emit("message:send")
-    if (socket) {
-      socket.emit('message:send', {
-        conversationId,
-        content,
-        clientMessageId
-      });
-    } else {
-      // If socket is not connected, mark message as failed
-      get().markMessageFailed(clientMessageId);
-    }
   },
+
+  confirmMessage: (clientId, serverMessage) => set((state) => {
+    const message = normalizeMessage({
+      ...serverMessage,
+      clientId: serverMessage.clientId || serverMessage.clientMessageId || clientId,
+      clientMessageId: serverMessage.clientMessageId || serverMessage.clientId || clientId
+    });
+    const conversationMessages = state.messagesByConversationId[message.conversationId] || [];
+    const updatedMessages = conversationMessages.some((msg) => getMessageClientId(msg) === clientId || msg._id === message._id)
+      ? conversationMessages.map((msg) => (
+        getMessageClientId(msg) === clientId || msg._id === message._id ? message : msg
+      ))
+      : [...conversationMessages, message];
+
+    return {
+      conversations: state.conversations.map((conversation) => (
+        conversation._id === message.conversationId
+          ? { ...conversation, lastMessage: message, updatedAt: message.createdAt }
+          : conversation
+      )),
+      messagesByConversationId: {
+        ...state.messagesByConversationId,
+        [message.conversationId]: updatedMessages
+      }
+    };
+  }),
 
   reconcileMessage: (serverMessage) => {
-    const { messagesByConversationId, conversations } = get();
-    
-    // If serverMessage has clientMessageId, find and replace optimistic message
-    if (serverMessage.clientMessageId) {
-      // Find the conversation's messages
-      const conversationMessages = messagesByConversationId[serverMessage.conversationId] || [];
-      
-      // Find the optimistic message with matching clientMessageId
-      const optimisticIndex = conversationMessages.findIndex(
-        msg => msg.clientMessageId === serverMessage.clientMessageId
-      );
-      
-      if (optimisticIndex !== -1) {
-        // Replace the optimistic message with the server message
-        const updatedConversationMessages = [...conversationMessages];
-        updatedConversationMessages[optimisticIndex] = serverMessage;
-        
-        // Update the messagesByConversationId
-        const updatedMessagesByConversationId = {
-          ...messagesByConversationId,
-          [serverMessage.conversationId]: updatedConversationMessages as Message[]
-        };
+    const message = normalizeMessage(serverMessage);
+    const clientId = getMessageClientId(message);
 
-        // Update conversations to reflect the new lastMessage
-        const updatedConversations = conversations.map(conv => {
-          if (conv._id === serverMessage.conversationId) {
-            return {
-              ...conv,
-              lastMessage: serverMessage,
-              updatedAt: serverMessage.createdAt
-            };
-          }
-          return conv;
-        });
-
-        set({
-          conversations: updatedConversations,
-          messagesByConversationId: updatedMessagesByConversationId
-        });
-      } else {
-        // If no matching optimistic message, add as a new message
-        get().addMessage(serverMessage);
-      }
-    } else {
-      // If no clientMessageId, add as a new message
-      get().addMessage(serverMessage);
+    if (clientId) {
+      get().confirmMessage(clientId, message);
+      return;
     }
+
+    get().addMessage(message);
   },
 
-  markMessageFailed: (clientMessageId) => {
-    const { messagesByConversationId } = get();
-    
-    // Find the message with the given clientMessageId
-    let messageToUpdate: Message | null = null;
-    let conversationIdToUpdate: string | null = null;
-    
-    for (const [conversationId, messages] of Object.entries(messagesByConversationId)) {
-      const messageIndex = messages.findIndex(msg => msg.clientMessageId === clientMessageId);
-      if (messageIndex !== -1) {
-        messageToUpdate = messages[messageIndex];
-        conversationIdToUpdate = conversationId;
-        break;
-      }
-    }
-    
-    if (messageToUpdate && conversationIdToUpdate) {
-      // Update the message status to 'failed'
-      const conversationMessages = messagesByConversationId[conversationIdToUpdate] || [];
-      const updatedConversationMessages = conversationMessages.map(msg => 
-        msg.clientMessageId === clientMessageId 
-          ? { ...msg, status: 'failed' } as Message
-          : msg
-      );
-      
-      const updatedMessagesByConversationId = {
-        ...messagesByConversationId,
-        [conversationIdToUpdate]: updatedConversationMessages
-      };
-      
-      set({
-        messagesByConversationId: updatedMessagesByConversationId
-      });
-    }
-  },
+  markFailed: (clientId) => set((state) => {
+    const messagesByConversationId = Object.fromEntries(
+      Object.entries(state.messagesByConversationId).map(([conversationId, messages]) => [
+        conversationId,
+        messages.map((message) => (
+          getMessageClientId(message) === clientId ? { ...message, status: 'failed' as const } : message
+        ))
+      ])
+    );
+
+    return { messagesByConversationId };
+  }),
+
+  markMessageFailed: (clientId) => get().markFailed(clientId),
+
+  updateConversationLastMessage: (message) => set((state) => ({
+    conversations: state.conversations.map((conversation) => (
+      conversation._id === message.conversationId
+        ? { ...conversation, lastMessage: message, updatedAt: message.createdAt }
+        : conversation
+    ))
+  })),
 
   updateUserPresence: (userId, isOnline) => {
     set((state) => ({
@@ -346,6 +340,10 @@ export const useChatStore = create<ChatState>((set, get) => ({
       }
     }));
   },
+
+  setUserOnline: (userId) => get().updateUserPresence(userId, true),
+
+  setUserOffline: (userId) => get().updateUserPresence(userId, false),
 
   addUserTyping: (conversationId, userId) => {
     set((state) => {
@@ -379,9 +377,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
     set((state) => {
       const updatedMessagesByConversationId = { ...state.messagesByConversationId };
       
-      // Find the message across all conversations
       for (const [conversationId, messages] of Object.entries(updatedMessagesByConversationId)) {
-        const messageIndex = messages.findIndex(msg => msg._id === messageId || msg.clientMessageId === messageId);
+        const messageIndex = messages.findIndex(msg => msg._id === messageId || getMessageClientId(msg) === messageId);
         if (messageIndex !== -1) {
           const updatedMessages = [...messages];
           updatedMessages[messageIndex] = {
@@ -390,9 +387,33 @@ export const useChatStore = create<ChatState>((set, get) => ({
           };
           
           updatedMessagesByConversationId[conversationId] = updatedMessages;
-          break; // Found and updated the message
+          break;
         }
       }
+      
+      return {
+        messagesByConversationId: updatedMessagesByConversationId
+      };
+    });
+  },
+
+  markConversationMessagesAsRead: (conversationId, currentUserId) => {
+    set((state) => {
+      const updatedMessagesByConversationId = { ...state.messagesByConversationId };
+      const messages = updatedMessagesByConversationId[conversationId];
+      
+      if (!messages) return state;
+      
+      // Only mark messages NOT sent by current user as read
+      const updatedMessages = messages.map((msg: any) => {
+        const senderId = typeof msg.senderId === 'string' ? msg.senderId : msg.senderId?._id;
+        if (senderId !== currentUserId && msg.status !== 'read') {
+          return { ...msg, status: 'read' as const };
+        }
+        return msg;
+      });
+      
+      updatedMessagesByConversationId[conversationId] = updatedMessages;
       
       return {
         messagesByConversationId: updatedMessagesByConversationId
@@ -417,44 +438,3 @@ export const useChatStore = create<ChatState>((set, get) => ({
     });
   }
 }));
-
-// Add presence and typing listeners to socket
-socket.on('presence:update', (data: { userId: string; status: 'online' | 'offline'; lastSeen?: string }) => {
-  try {
-    useChatStore.getState().updateUserPresence(data.userId, data.status === 'online');
-  } catch (error) {
-    console.error('Error updating user presence:', error);
-  }
-});
-
-socket.on('typing:start', ({ conversationId, userId }: { conversationId: string; userId: string }) => {
-  try {
-    useChatStore.getState().addUserTyping(conversationId, userId);
-  } catch (error) {
-    console.error('Error adding user typing:', error);
-  }
-});
-
-socket.on('typing:stop', ({ conversationId, userId }: { conversationId: string; userId: string }) => {
-  try {
-    useChatStore.getState().removeUserTyping(conversationId, userId);
-  } catch (error) {
-    console.error('Error removing user typing:', error);
-  }
-});
-
-socket.on('message:delivered', (messageId: string) => {
-  try {
-    useChatStore.getState().updateMessageStatus(messageId, 'delivered');
-  } catch (error) {
-    console.error('Error updating message status (delivered):', error);
-  }
-});
-
-socket.on('message:read', (messageId: string) => {
-  try {
-    useChatStore.getState().updateMessageStatus(messageId, 'read');
-  } catch (error) {
-    console.error('Error updating message status (read):', error);
-  }
-});

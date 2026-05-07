@@ -1,12 +1,18 @@
 import { io, Socket } from 'socket.io-client';
-import { env } from '@/config/env';
 
-// Create exactly ONE Socket.IO client instance (singleton)
-export const socket: Socket = io((env.API_BASE_URL || '').replace('/api', ''), {
-  autoConnect: false,
+const socketUrl =
+  process.env.NEXT_PUBLIC_SOCKET_URL ||
+  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api\/?$/, '');
+
+if (!socketUrl) {
+  throw new Error('NEXT_PUBLIC_SOCKET_URL or NEXT_PUBLIC_API_BASE_URL is required');
+}
+
+export const socket: Socket = io(socketUrl, {
   withCredentials: true,
   transports: ['websocket'],
+  autoConnect: false,
+  reconnection: true,
 });
 
-// Export the socket instance
 export default socket;

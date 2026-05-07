@@ -1,4 +1,4 @@
-import { Conversation, User } from '@/types';
+import { Conversation } from '@/types';
 
 interface ConversationItemProps {
   conversation: Conversation;
@@ -27,34 +27,46 @@ export default function ConversationItem({ conversation, isActive, currentUserId
     : lastMessagePreview;
 
   return (
-    <div className={`p-3 border-b border-gray-100 ${isActive ? 'bg-blue-50' : ''}`}>
-      <div className="flex items-center space-x-3">
-        <div className="flex-shrink-0">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-medium relative ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`}>
+    <div className={`p-3 rounded-xl ${isActive ? '' : ''}`}>
+      <div className="flex items-center gap-3">
+        {/* Avatar */}
+        <div className="flex-shrink-0 relative">
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm ${
+            isOnline 
+              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' 
+              : 'bg-gradient-to-br from-slate-600 to-slate-700'
+          }`}>
             {otherParticipant?.name.charAt(0).toUpperCase()}
-            {isOnline && (
-              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
-            )}
           </div>
+          {/* Online indicator */}
+          {isOnline && (
+            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-900" />
+          )}
         </div>
+        
+        {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-gray-900 truncate">
+          <div className="flex items-center justify-between mb-0.5">
+            <h3 className={`font-semibold truncate ${
+              isActive ? 'text-white' : 'text-gray-200'
+            }`}>
               {otherParticipant?.name}
             </h3>
             {conversation.updatedAt && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
                 {new Date(conversation.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 truncate">
+          <p className="text-sm text-gray-400 truncate">
             {truncatedMessage}
           </p>
         </div>
+        
+        {/* Unread badge */}
         {conversation.unreadCount > 0 && (
           <div className="flex-shrink-0">
-            <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-500 rounded-full">
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full shadow-lg shadow-pink-500/30">
               {conversation.unreadCount}
             </span>
           </div>

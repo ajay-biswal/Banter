@@ -15,7 +15,8 @@ const startServer = async () =>{
         });
 
         // Initialize Socket.IO
-        initSocket(server);
+        const io = initSocket(server);
+        app.set("io", io);
 
         // Graceful shutdown
         process.on("SIGTERM",()=>{

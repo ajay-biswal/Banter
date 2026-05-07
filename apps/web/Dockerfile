@@ -2,17 +2,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-RUN corepack enable
+RUN npm install -g pnpm
 
-COPY pnpm.workspace.yaml  pnpm-lock.yaml package.json ./
-COPY apps/web/package.json apps/web/package.json
+COPY . .
 
-RUN pnpm install --filter @banter/web...
-
-COPY apps/web apps/web
-
-WORKDIR /app/apps/web
+RUN pnpm install
 
 EXPOSE 3000
 
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "--filter", "web", "dev"]

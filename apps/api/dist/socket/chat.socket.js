@@ -3,6 +3,18 @@ import { Conversation } from '../models/conversation.model.js';
 import { markMessagesDelivered, markMessagesRead, markConversationMessagesRead } from '../services/readReceipt.service.js';
 // Simple in-memory typing state per socket
 const typingState = new Map(); // socket.id -> Set of conversationIds
+const serializeMessage = (message) => ({
+    _id: message._id.toString(),
+    conversationId: message.conversationId.toString(),
+    senderId: message.senderId.toString(),
+    content: message.content,
+    type: message.type,
+    status: message.status,
+    createdAt: message.createdAt,
+    updatedAt: message.updatedAt,
+    clientId: message.clientId,
+    clientMessageId: message.clientId
+});
 /**
  * Setup chat socket event handlers
  */
@@ -10,7 +22,8 @@ export const setupChatHandlers = (io, socket) => {
     // Handle sending a message
     socket.on('message:send', async (data, callback) => {
         try {
-            const { conversationId, content, type = 'text' } = data;
+            const { conversationId, content, type = 'text', clientId, clientMessageId } = data;
+            const dedupeClientId = clientId || clientMessageId;
             if (!conversationId || !content) {
                 if (callback)
                     callback({ success: false, message: 'Conversation ID and content are required' });
@@ -28,32 +41,37 @@ export const setupChatHandlers = (io, socket) => {
                     callback({ success: false, message: 'You are not authorized to send messages to this conversation' });
                 return;
             }
+            if (dedupeClientId) {
+                const existingMessage = await Message.findOne({
+                    conversationId,
+                    senderId: userId,
+                    clientId: dedupeClientId
+                });
+                if (existingMessage) {
+                    if (callback)
+                        callback({ success: true, message: serializeMessage(existingMessage) });
+                    return;
+                }
+            }
             // Create the message using the Message model
             const message = new Message({
                 conversationId,
                 senderId: userId,
                 content,
                 type,
-                status: 'sent'
+                status: 'sent',
+                clientId: dedupeClientId
             });
             await message.save();
             // Update the conversation's last message
             await Conversation.updateOne({ _id: conversationId }, { lastMessage: message._id });
+            const payload = serializeMessage(message);
             // Emit the new message to all participants in the conversation room
             // Exclude sender to prevent duplicate message display
-            socket.to(`conversation:${conversationId}`).emit('message:new', {
-                _id: message._id,
-                conversationId: message.conversationId,
-                senderId: message.senderId,
-                content: message.content,
-                type: message.type,
-                status: message.status,
-                createdAt: message.createdAt,
-                updatedAt: message.updatedAt
-            });
+            socket.to(`conversation:${conversationId}`).emit('message:new', payload);
             // Acknowledge the sender
             if (callback)
-                callback({ success: true, message: 'Message sent successfully', data: message });
+                callback({ success: true, message: payload });
         }
         catch (error) {
             console.error('Error sending message:', error);

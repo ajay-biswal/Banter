@@ -54,6 +54,29 @@ export const initSocket = (server) => {
     io.on('connection', (socket) => {
         const userId = socket.data.user.sub;
         console.log(`User connected: ${userId}`);
+        const emitPresence = (target, presenceUserId, status, lastSeen) => {
+            io.to(target).emit('presence:update', {
+                userId: presenceUserId,
+                status,
+                lastSeen
+            });
+            io.to(target).emit(status === 'online' ? 'user:online' : 'user:offline', presenceUserId);
+        };
+        const notifyConversationParticipants = async (status, lastSeen) => {
+            const conversations = await Conversation.find({ participants: { $in: [userId] } }).select('participants');
+            const participantIds = new Set();
+            for (const conversation of conversations) {
+                for (const participant of conversation.participants) {
+                    const participantId = participant._id.toString();
+                    if (participantId !== userId) {
+                        participantIds.add(participantId);
+                    }
+                }
+            }
+            participantIds.forEach((participantId) => {
+                emitPresence(`user:${participantId}`, userId, status, lastSeen);
+            });
+        };
         // Mark user as connected in presence store
         if (presenceStore instanceof RedisPresenceStore) {
             presenceStore.userConnected(userId).catch(err => console.error(`Error marking user ${userId} as connected:`, err));
@@ -61,13 +84,13 @@ export const initSocket = (server) => {
         else {
             presenceStore.userConnected(userId);
         }
-        // Emit presence update to user's room and their conversations
-        io.to(`user:${userId}`).emit('presence:update', {
-            userId,
-            status: 'online'
-        });
         // Join user-specific room
         socket.join(`user:${userId}`);
+        // Emit presence update to this user and known chat participants.
+        emitPresence(`user:${userId}`, userId, 'online');
+        notifyConversationParticipants('online').catch(err => {
+            console.error(`Error notifying participants that user ${userId} is online:`, err);
+        });
         // Setup chat event handlers
         setupChatHandlers(io, socket);
         socket.on('disconnect', () => {
@@ -101,10 +124,9 @@ export const initSocket = (server) => {
                     };
                     getLastSeen().then(lastSeen => {
                         // Emit to user's room and their conversations
-                        io.to(`user:${userId}`).emit('presence:update', {
-                            userId,
-                            status: 'offline',
-                            lastSeen: lastSeen ? lastSeen.toISOString() : null
+                        emitPresence(`user:${userId}`, userId, 'offline', lastSeen ? lastSeen.toISOString() : null);
+                        notifyConversationParticipants('offline', lastSeen ? lastSeen.toISOString() : null).catch(err => {
+                            console.error(`Error notifying participants that user ${userId} is offline:`, err);
                         });
                     }).catch(err => {
                         console.error(`Error getting last seen for user ${userId}:`, err);
@@ -117,7 +139,7 @@ export const initSocket = (server) => {
             socket.leave(`user:${userId}`);
         });
         // Handle joining a conversation room
-        socket.on('conversation:join', async (conversationId) => {
+        const joinConversation = async (conversationId) => {
             socket.join(`conversation:${conversationId}`);
             console.log(`User ${userId} joined conversation: ${conversationId}`);
             // Emit initial presence info for other participants in the conversation
@@ -147,6 +169,7 @@ export const initSocket = (server) => {
                                     status: participantPresence.online ? 'online' : 'offline',
                                     lastSeen: participantPresence.online ? null : participantPresence.lastSeen?.toISOString()
                                 });
+                                socket.emit(participantPresence.online ? 'user:online' : 'user:offline', participantId);
                             }
                         }
                     }
@@ -167,10 +190,7 @@ export const initSocket = (server) => {
                             checkParticipantOnline().then(isOnline => {
                                 if (isOnline) {
                                     // Send presence update to the other participant
-                                    io.to(`user:${participantId}`).emit('presence:update', {
-                                        userId: userId,
-                                        status: 'online'
-                                    });
+                                    emitPresence(`user:${participantId}`, userId, 'online');
                                 }
                             }).catch(err => {
                                 console.error(`Error checking online status for participant ${participantId}:`, err);
@@ -182,7 +202,9 @@ export const initSocket = (server) => {
             catch (error) {
                 console.error('Error emitting initial presence info:', error);
             }
-        });
+        };
+        socket.on('conversation:join', joinConversation);
+        socket.on('join:conversation', joinConversation);
         // Handle leaving a conversation room
         socket.on('conversation:leave', (conversationId) => {
             socket.leave(`conversation:${conversationId}`);

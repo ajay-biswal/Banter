@@ -3,6 +3,7 @@ import { Conversation } from '../models/conversation.model.js';
 import { Message } from '../models/message.model.js';
 import { User } from '../models/user.model.js';
 import { AppError } from '../utils/AppError.js';
+import { decryptMessage } from '../utils/encryption.js';
 
 /**
  * Get or create a conversation between two users
@@ -62,17 +63,34 @@ export const getUserConversations = async (userId: string) => {
     participants: { $in: [userObjectId] }
   })
     .populate('participants', '_id name email')
-    .populate('lastMessage', '_id content senderId createdAt status')
+    .populate('lastMessage', '_id content iv senderId createdAt status type attachments')  // Added iv and type
     .sort({ updatedAt: -1 }); // Sort by updatedAt descending (most recent first)
 
-  // Populate sender info in lastMessage
+  // Populate sender info and decrypt lastMessage content
   const populatedConversations = await Promise.all(conversations.map(async (conv) => {
     if (conv.lastMessage) {
       const lastMessage = conv.lastMessage as any;
+      
+      // Decrypt message content if IV exists
+      if (lastMessage.iv && lastMessage.content) {
+        lastMessage.content = decryptMessage(lastMessage.content, lastMessage.iv);
+      }
+      
+      // Handle media/file message placeholders
+      if (lastMessage.type === 'image' && lastMessage.attachments?.length > 0) {
+        lastMessage.content = '📷 Photo';
+      } else if (lastMessage.type === 'file' && lastMessage.attachments?.length > 0) {
+        lastMessage.content = '📎 File';
+      }
+      
+      // Populate sender info
       if (lastMessage.senderId) {
         const sender = await User.findById(lastMessage.senderId).select('_id name email');
         lastMessage.sender = sender;
       }
+      
+      // Remove IV from response (not needed by frontend)
+      delete lastMessage.iv;
     }
     return conv;
   }));
@@ -121,6 +139,16 @@ export const getConversationMessages = async (
     .sort({ createdAt: -1 }) // Sort by createdAt descending to get newest first
     .limit(limit);
 
+  // Decrypt message content before returning
+  const decryptedMessages = messages.map((message: any) => {
+    const messageObj = message.toObject();
+    // Decrypt content if IV exists (encrypted message)
+    if (messageObj.iv) {
+      messageObj.content = decryptMessage(messageObj.content, messageObj.iv);
+    }
+    return messageObj;
+  });
+
   // Reverse the order to return messages in chronological order (oldest first)
-  return messages.reverse();
+  return decryptedMessages.reverse();
 };

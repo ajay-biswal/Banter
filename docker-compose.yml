@@ -1,36 +1,10 @@
+version: "3.9"
+
 services:
-  api:
-    container_name: banter-api
-    build: 
-      context: .
-      dockerfile: apps/api/Dockerfile
-    ports:
-      - "5000:5000"
-    env_file:
-      - .env
-    volumes:
-      - .:/app
-      - /app/node_modules
-    depends_on:
-      - mongo
-      - redis
-
-  web:
-    container_name: banter-web
-    build:
-      context: .
-      dockerfile: apps/web/Dockerfile
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
-    depends_on:
-      - api
-
   mongo:
     image: mongo:7
     container_name: banter-mongo
+    restart: unless-stopped
     ports:
       - "27017:27017"
     volumes:
@@ -39,11 +13,36 @@ services:
   redis:
     image: redis:7-alpine
     container_name: banter-redis
+    restart: unless-stopped
     ports:
-      - "6380:6379"
-    volumes:
-      - redis_data:/data
+      - "6379:6379"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: banter-api
+    restart: unless-stopped
+    depends_on:
+      - mongo
+      - redis
+    ports:
+      - "5000:5000"
+    env_file:
+      - apps/api/.env
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: banter-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+    env_file:
+      - apps/web/.env.local
 
 volumes:
   mongo_data:
-  redis_data:

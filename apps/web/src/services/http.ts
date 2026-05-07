@@ -11,6 +11,21 @@ const getCookie = (name: string): string | undefined => {
   return undefined;
 };
 
+// Prevent multiple simultaneous refresh attempts
+let isRefreshing = false;
+let failedQueue: Array<{ resolve: (value?: any) => void; reject: (error: any) => void }> = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 export const http = axios.create({
   baseURL: env.API_BASE_URL,
   withCredentials: true,
@@ -42,7 +57,65 @@ http.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Handle 401 Unauthorized errors
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // If this is the refresh request itself failing, don't retry
+      if (originalRequest.url?.includes('/auth/refresh')) {
+        // Refresh endpoint itself returned 401 - logout user
+        if (typeof window !== 'undefined') {
+          // Clear any client-side auth state
+          localStorage.removeItem('auth');
+          window.location.href = '/login';
+        }
+        return Promise.reject(error);
+      }
+
+      originalRequest._retry = true;
+
+      // If already refreshing, queue this request
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => {
+            return http(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
+      isRefreshing = true;
+
+      try {
+        // Try to refresh the token
+        const response = await http.post('/auth/refresh');
+        
+        if ((response.data as any)?.accessToken) {
+          // Process queued requests
+          processQueue(null, (response.data as any).accessToken);
+          
+          // Retry the original request with new token
+          return http(originalRequest);
+        }
+      } catch (refreshError: any) {
+        // Refresh failed - logout user
+        processQueue(refreshError, null);
+        
+        if (typeof window !== 'undefined') {
+          // Clear any client-side auth state
+          localStorage.removeItem('auth');
+          window.location.href = '/login';
+        }
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
     return Promise.reject(error);
   }
 );

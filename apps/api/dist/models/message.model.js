@@ -1,59 +1,100 @@
 import mongoose, { Schema } from "mongoose";
-// Define the message types enum
-var MessageType;
+// ---- ENUMS ---- //
+export var MessageType;
 (function (MessageType) {
-    MessageType["Text"] = "text";
-    MessageType["Image"] = "image";
-    MessageType["File"] = "file"; // Extensible for future use
+    MessageType["TEXT"] = "text";
+    MessageType["IMAGE"] = "image";
+    MessageType["FILE"] = "file";
+    MessageType["SYSTEM"] = "system";
 })(MessageType || (MessageType = {}));
-// Define the message status enum
-var MessageStatus;
-(function (MessageStatus) {
-    MessageStatus["Sent"] = "sent";
-    MessageStatus["Delivered"] = "delivered";
-    MessageStatus["Read"] = "read";
-})(MessageStatus || (MessageStatus = {}));
-// Define the schema
+export var DeliveryStatus;
+(function (DeliveryStatus) {
+    DeliveryStatus["SENT"] = "sent";
+    DeliveryStatus["DELIVERED"] = "delivered";
+    DeliveryStatus["READ"] = "read";
+})(DeliveryStatus || (DeliveryStatus = {}));
+// ---- SCHEMA ---- //
 const MessageSchema = new Schema({
     conversationId: {
         type: Schema.Types.ObjectId,
         ref: "Conversation",
-        required: true
+        required: true,
+        index: true
     },
     senderId: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true
     },
+    // Core content
     content: {
         type: String,
-        required: true,
         trim: true,
-        maxlength: 5000 // Reasonable limit for message content
+        maxlength: 5000
     },
+    // Message type
     type: {
         type: String,
         enum: Object.values(MessageType),
-        default: MessageType.Text,
+        default: MessageType.TEXT,
         required: true
     },
+    // For media / files / extensibility
+    metadata: {
+        type: Schema.Types.Mixed
+        // Example:
+        // { url, fileName, size, mimeType }
+    },
+    // ---- DELIVERY SYSTEM ---- //
+    deliveredTo: [
+        {
+            userId: { type: Schema.Types.ObjectId, ref: "User" },
+            deliveredAt: { type: Date }
+        }
+    ],
+    readBy: [
+        {
+            userId: { type: Schema.Types.ObjectId, ref: "User" },
+            readAt: { type: Date }
+        }
+    ],
+    // ---- ORDERING ---- //
+    sequence: {
+        type: Number,
+        required: false
+        // Increment per conversation
+    },
+    // ---- STATUS (fallback / quick UI) ---- //
     status: {
         type: String,
-        enum: Object.values(MessageStatus),
-        default: MessageStatus.Sent,
-        required: true
+        enum: Object.values(DeliveryStatus),
+        default: DeliveryStatus.SENT
+    },
+    // ---- EDIT / DELETE ---- //
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
+    deletedAt: Date,
+    editedAt: Date,
+    // ---- CLIENT-SIDE SUPPORT ---- //
+    clientId: {
+        type: String
+        // Used for deduplication (VERY IMPORTANT)
     }
 }, {
-    timestamps: true, // Automatically adds createdAt and updatedAt
+    timestamps: true,
     versionKey: false
 });
-// Index for efficient retrieval of messages in a conversation (pagination)
-MessageSchema.index({ conversationId: 1, createdAt: 1 });
-// Index for efficient querying by sender
-MessageSchema.index({ senderId: 1 });
-// Index for efficient querying by status
-MessageSchema.index({ status: 1 });
-// Create and export the model
+// ---- INDEXES ---- //
+// 🔥 Critical for chat performance
+MessageSchema.index({ conversationId: 1, sequence: -1 });
+// 🔥 Fallback ordering
+MessageSchema.index({ conversationId: 1, createdAt: -1 });
+// 🔥 Deduplication
+MessageSchema.index({ clientId: 1 }, { sparse: true });
+// 🔥 Partial index (ignore deleted)
+MessageSchema.index({ conversationId: 1, sequence: -1 }, { partialFilterExpression: { isDeleted: false } });
 export const Message = mongoose.models.Message ||
     mongoose.model("Message", MessageSchema);
 //# sourceMappingURL=message.model.js.map
