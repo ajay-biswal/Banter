@@ -5,21 +5,26 @@ WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm
 
-# Copy files
+# Copy workspace files
+COPY pnpm-workspace.yaml .
+COPY pnpm-lock.yaml .
 COPY package.json .
-COPY pnpm-lock.yaml ./
-COPY tsconfig.json ./
+
+# Copy api package.json
+COPY apps/api/package.json apps/api/package.json
 
 # Install dependencies
-RUN pnpm install
+RUN pnpm install --filter @banter/api...
 
-# Copy source
-COPY . .
+# Copy source code
+COPY apps/api apps/api
+
+# Move to api workspace
+WORKDIR /app/apps/api
 
 # Build app
 RUN pnpm build
 
 EXPOSE 5000
 
-# Start production server
 CMD ["pnpm", "start"]
