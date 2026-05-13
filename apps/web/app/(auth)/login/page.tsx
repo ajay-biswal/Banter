@@ -132,7 +132,7 @@ export default function LoginPage() {
             </form>
 
             {/* Social Login */}
-            {/* <SocialLogin /> */}
+            <SocialLogin />
           </div>
         </AuthCard>
 
