@@ -19,8 +19,8 @@ RUN pnpm install --filter @banter/web... --config.fetch-timeout=120000
 # Copy web source
 COPY apps/web apps/web
 
-WORKDIR /app/apps/web
+
 
 EXPOSE 3000
 
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "--filter", "@banter/web", "dev"]

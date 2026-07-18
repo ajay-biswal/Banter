@@ -8,14 +8,14 @@ services:
         - BUILDKIT_INLINE_CACHE=1
     ports:
       - "5000:5000"
+    environment:
+      - NODE_OPTIONS= --dns-result-order=ipv4first
     env_file:
       - .env
     volumes:
       - .:/app
       - /app/node_modules
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
+    
 
   web:
     container_name: banter-web
@@ -26,16 +26,21 @@ services:
         - BUILDKIT_INLINE_CACHE=1
     ports:
       - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api
+      - NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next
     depends_on:
       - api
-    dns:
-      - 8.8.8.8
-      - 8.8.4.4
+    
 
   
 
   
+
+ 
 
