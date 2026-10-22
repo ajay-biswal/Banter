@@ -226,6 +226,11 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     backgroundColor: colors.primary,
   },
+  noteText: {
+    color: colors.textSecondary,
+    fontSize: typography.small,
+    fontWeight: '600',
+  },
   headingBlock: {
     gap: spacing.sm,
     marginTop: spacing.xl,
