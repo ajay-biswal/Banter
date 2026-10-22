@@ -37,7 +37,7 @@ export default function AuthScreenLayout({
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="dark" />
+      <StatusBar style="dark" backgroundColor={colors.background} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardContainer}
@@ -54,10 +54,11 @@ export default function AuthScreenLayout({
           contentInsetAdjustmentBehavior="automatic"
           automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
         >
-          <View
-            pointerEvents="none"
-            style={[styles.topAccent, isWideScreen && styles.wideTopAccent]}
-          />
+          <View pointerEvents="none" style={styles.decorations}>
+            <View style={[styles.topMintShape, isWideScreen && styles.wideMintShape]} />
+            <View style={styles.peachShape} />
+            <View style={styles.sageShape} />
+          </View>
           <View
             style={[
               styles.content,
@@ -67,6 +68,7 @@ export default function AuthScreenLayout({
           >
             <View style={styles.brandHeader}>
               <Text accessibilityRole="header" style={styles.wordmark}>Banter</Text>
+              <Text style={styles.brandTagline}>good people. better conversations.</Text>
             </View>
             {topNote ? (
               <View style={[styles.notePill, isShortScreen && styles.shortNotePill]}>
@@ -127,19 +129,44 @@ const styles = StyleSheet.create({
   wideScrollContent: {
     alignItems: 'center',
   },
-  topAccent: {
+  decorations: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  topMintShape: {
     position: 'absolute',
-    top: -100,
-    right: -72,
-    width: 230,
-    height: 230,
-    borderRadius: radii.pill,
+    top: -115,
+    right: -90,
+    width: 255,
+    height: 255,
+    borderRadius: 128,
     backgroundColor: colors.surfaceMint,
   },
-  wideTopAccent: {
-    right: '12%',
-    width: 280,
-    height: 280,
+  wideMintShape: {
+    right: '10%',
+    width: 300,
+    height: 300,
+    borderRadius: 150,
+  },
+  peachShape: {
+    position: 'absolute',
+    top: 190,
+    left: -65,
+    width: 105,
+    height: 105,
+    borderRadius: 53,
+    backgroundColor: colors.surfacePeach,
+    opacity: 0.85,
+  },
+  sageShape: {
+    position: 'absolute',
+    bottom: 75,
+    right: -45,
+    width: 125,
+    height: 125,
+    borderRadius: 63,
+    backgroundColor: colors.surfaceSage,
+    opacity: 0.75,
   },
   content: {
     flexGrow: 1,
@@ -162,14 +189,22 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
-    marginBottom: spacing.md,
+    minHeight: 58,
+    marginBottom: spacing.sm,
   },
   wordmark: {
     color: colors.text,
     fontSize: typography.brand + 3,
     fontWeight: '800',
     letterSpacing: -1,
+  },
+  brandTagline: {
+    marginTop: 2,
+    color: colors.textSecondary,
+    fontSize: 10,
+    letterSpacing: 0.7,
+    textTransform: 'uppercase',
+    fontWeight: '600',
   },
   notePill: {
     alignSelf: 'flex-start',
@@ -180,7 +215,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radii.pill,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfacePeach,
   },
   shortNotePill: {
     marginTop: spacing.sm,
