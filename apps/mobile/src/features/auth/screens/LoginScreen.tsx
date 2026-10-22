@@ -5,7 +5,7 @@ import TextField from '../../../components/TextField';
 import { colors, spacing, typography } from '../../../theme/tokens';
 import AuthScreenLayout from '../components/AuthScreenLayout';
 import { hasErrors, validateLoginForm } from '../validation';
-import { LoginFormErrors, LoginFormValues } from '../types';
+import type { LoginFormErrors, LoginFormValues } from '../types';
 
 type LoginScreenProps = {
   onCreateAccount: () => void;

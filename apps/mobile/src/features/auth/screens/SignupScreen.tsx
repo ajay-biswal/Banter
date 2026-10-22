@@ -5,7 +5,7 @@ import TextField from '../../../components/TextField';
 import { spacing, typography, colors } from '../../../theme/tokens';
 import AuthScreenLayout from '../components/AuthScreenLayout';
 import { hasErrors, validateSignupForm } from '../validation';
-import { SignupFormErrors, SignupFormValues } from '../types';
+import type { SignupFormErrors, SignupFormValues } from '../types';
 
 type SignupScreenProps = {
   onSignIn: () => void;

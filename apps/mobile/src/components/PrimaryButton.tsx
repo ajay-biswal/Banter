@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
+import type { ViewStyle } from 'react-native';
 import { colors, radii, typography } from '../theme/tokens';
 
 type PrimaryButtonProps = {

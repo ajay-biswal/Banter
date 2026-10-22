@@ -3,9 +3,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TextInputProps,
   View,
 } from 'react-native';
+import type { TextInputProps } from 'react-native';
 import { colors, radii, spacing, typography } from '../theme/tokens';
 
 type TextFieldProps = {

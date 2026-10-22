@@ -1,4 +1,4 @@
-import {
+import type {
   LoginFormErrors,
   LoginFormValues,
   SignupFormErrors,
