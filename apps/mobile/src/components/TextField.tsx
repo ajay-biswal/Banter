@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
@@ -55,6 +56,8 @@ export default function TextField({
       >
         <TextInput
           accessibilityLabel={accessibilityLabel ?? label}
+          accessibilityHint={error ? `Error: ${error}` : undefined}
+          accessibilityState={{ invalid: Boolean(error) }}
           autoCapitalize={autoCapitalize}
           autoComplete={autoComplete}
           autoCorrect={false}
@@ -73,17 +76,25 @@ export default function TextField({
           value={value}
         />
         {secure && (
-          <Text
+          <Pressable
             accessibilityRole="button"
             accessibilityLabel={passwordVisible ? 'Hide password' : 'Show password'}
+            accessibilityState={{ selected: passwordVisible }}
+            hitSlop={8}
             onPress={() => setPasswordVisible((visible) => !visible)}
-            style={styles.visibilityToggle}
+            style={styles.visibilityButton}
           >
-            {passwordVisible ? 'Hide' : 'Show'}
-          </Text>
+            <Text style={styles.visibilityToggle}>
+              {passwordVisible ? 'Hide' : 'Show'}
+            </Text>
+          </Pressable>
         )}
       </View>
-      {error ? <Text accessibilityLiveRegion="polite" style={styles.error}>{error}</Text> : null}
+      {error ? (
+        <Text accessibilityLiveRegion="polite" style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
     </View>
   );
 }
@@ -98,7 +109,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   inputFrame: {
-    minHeight: 54,
+    minHeight: 56,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -109,9 +120,11 @@ const styles = StyleSheet.create({
   },
   inputFrameFocused: {
     borderColor: colors.primary,
+    backgroundColor: colors.surface,
   },
   inputFrameError: {
     borderColor: colors.error,
+    backgroundColor: colors.errorSurface,
   },
   input: {
     flex: 1,
@@ -120,9 +133,15 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: typography.body,
   },
+  visibilityButton: {
+    minHeight: 44,
+    minWidth: 44,
+    marginRight: -spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+  },
   visibilityToggle: {
-    marginLeft: spacing.sm,
-    paddingVertical: spacing.sm,
     color: colors.primaryPressed,
     fontSize: typography.small + 1,
     fontWeight: '700',
