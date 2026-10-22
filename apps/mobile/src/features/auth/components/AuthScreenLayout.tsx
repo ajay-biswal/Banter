@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   decorations: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     overflow: 'hidden',
   },
   topMintShape: {
@@ -225,11 +225,6 @@ const styles = StyleSheet.create({
     height: 7,
     borderRadius: radii.pill,
     backgroundColor: colors.primary,
-  },
-  noteText: {
-    color: colors.textSecondary,
-    fontSize: typography.small,
-    fontWeight: '600',
   },
   headingBlock: {
     gap: spacing.sm,
