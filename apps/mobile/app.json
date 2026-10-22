@@ -11,7 +11,8 @@
       "bundleIdentifier": "com.banter.mobile"
     },
     "android": {
-      "package": "com.banter.mobile"
+      "package": "com.banter.mobile",
+      "softwareKeyboardLayoutMode": "resize"
     }
   }
 }
