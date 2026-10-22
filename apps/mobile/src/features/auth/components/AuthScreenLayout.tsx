@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import BrandMark from '../../../components/BrandMark';
@@ -31,29 +32,60 @@ export default function AuthScreenLayout({
   topNote,
   children,
 }: AuthScreenLayoutProps) {
+  const { width, height } = useWindowDimensions();
+  const isWideScreen = width >= 600;
+  const isShortScreen = height < 720;
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar style="dark" backgroundColor={colors.background} />
+      <StatusBar style="dark" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.keyboardContainer}
       >
         <ScrollView
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isWideScreen && styles.wideScrollContent,
+          ]}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           showsVerticalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="automatic"
         >
-          <View style={styles.topAccent} />
-          <View style={styles.content}>
+          <View
+            pointerEvents="none"
+            style={[
+              styles.topAccent,
+              isWideScreen && styles.wideTopAccent,
+            ]}
+          />
+          <View
+            style={[
+              styles.content,
+              isWideScreen && styles.wideContent,
+              isShortScreen && styles.shortContent,
+            ]}
+          >
             <BrandMark />
             {topNote ? (
-              <View style={styles.notePill}>
+              <View style={[styles.notePill, isShortScreen && styles.shortNotePill]}>
                 <View style={styles.noteDot} />
                 <Text style={styles.noteText}>{topNote}</Text>
               </View>
             ) : null}
-            <View style={styles.headingBlock}>
-              <Text style={styles.title}>{title}</Text>
+            <View
+              style={[
+                styles.headingBlock,
+                isShortScreen && styles.shortHeadingBlock,
+              ]}
+            >
+              <Text
+                accessibilityRole="header"
+                style={[styles.title, isWideScreen && styles.wideTitle, isShortScreen && styles.shortTitle]}
+              >
+                {title}
+              </Text>
               <Text style={styles.description}>{description}</Text>
             </View>
             <View style={styles.form}>{children}</View>
@@ -88,20 +120,39 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
   },
+  wideScrollContent: {
+    alignItems: 'center',
+  },
   topAccent: {
     position: 'absolute',
-    top: -92,
-    right: -58,
-    width: 190,
-    height: 190,
+    top: -100,
+    right: -72,
+    width: 230,
+    height: 230,
     borderRadius: radii.pill,
     backgroundColor: colors.surfaceMint,
   },
+  wideTopAccent: {
+    right: '12%',
+    width: 280,
+    height: 280,
+  },
   content: {
     flexGrow: 1,
+    width: '100%',
     paddingHorizontal: spacing.xl,
     paddingTop: spacing.lg,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.xxl,
+  },
+  wideContent: {
+    maxWidth: 480,
+    paddingHorizontal: spacing.xxl,
+    paddingTop: spacing.xxl,
+    paddingBottom: spacing.xxxl,
+  },
+  shortContent: {
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
   },
   notePill: {
     alignSelf: 'flex-start',
@@ -113,6 +164,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     borderRadius: radii.pill,
     backgroundColor: colors.surface,
+  },
+  shortNotePill: {
+    marginTop: spacing.lg,
   },
   noteDot: {
     width: 7,
@@ -130,12 +184,24 @@ const styles = StyleSheet.create({
     marginTop: spacing.xxxl,
     marginBottom: spacing.xl,
   },
+  shortHeadingBlock: {
+    marginTop: spacing.xl,
+    marginBottom: spacing.lg,
+  },
   title: {
     color: colors.text,
     fontSize: typography.title,
-    lineHeight: 36,
+    lineHeight: 38,
     fontWeight: '800',
     letterSpacing: -0.8,
+  },
+  wideTitle: {
+    fontSize: 34,
+    lineHeight: 42,
+  },
+  shortTitle: {
+    fontSize: 27,
+    lineHeight: 34,
   },
   description: {
     color: colors.textSecondary,
