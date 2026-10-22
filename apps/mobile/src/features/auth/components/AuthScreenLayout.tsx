@@ -11,7 +11,6 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import BrandMark from '../../../components/BrandMark';
 import { colors, radii, spacing, typography } from '../../../theme/tokens';
 
 type AuthScreenLayoutProps = PropsWithChildren<{
@@ -40,8 +39,9 @@ export default function AuthScreenLayout({
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardContainer}
+        keyboardVerticalOffset={0}
       >
         <ScrollView
           contentContainerStyle={[
@@ -52,13 +52,11 @@ export default function AuthScreenLayout({
           keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
           showsVerticalScrollIndicator={false}
           contentInsetAdjustmentBehavior="automatic"
+          automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
         >
           <View
             pointerEvents="none"
-            style={[
-              styles.topAccent,
-              isWideScreen && styles.wideTopAccent,
-            ]}
+            style={[styles.topAccent, isWideScreen && styles.wideTopAccent]}
           />
           <View
             style={[
@@ -67,7 +65,9 @@ export default function AuthScreenLayout({
               isShortScreen && styles.shortContent,
             ]}
           >
-            <BrandMark />
+            <View style={styles.brandHeader}>
+              <Text accessibilityRole="header" style={styles.wordmark}>Banter</Text>
+            </View>
             {topNote ? (
               <View style={[styles.notePill, isShortScreen && styles.shortNotePill]}>
                 <View style={styles.noteDot} />
@@ -82,7 +82,11 @@ export default function AuthScreenLayout({
             >
               <Text
                 accessibilityRole="header"
-                style={[styles.title, isWideScreen && styles.wideTitle, isShortScreen && styles.shortTitle]}
+                style={[
+                  styles.title,
+                  isWideScreen && styles.wideTitle,
+                  isShortScreen && styles.shortTitle,
+                ]}
               >
                 {title}
               </Text>
@@ -141,32 +145,45 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     width: '100%',
     paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
+    paddingTop: spacing.sm,
     paddingBottom: spacing.xxl,
   },
   wideContent: {
     maxWidth: 480,
     paddingHorizontal: spacing.xxl,
-    paddingTop: spacing.xxl,
+    paddingTop: spacing.xl,
     paddingBottom: spacing.xxxl,
   },
   shortContent: {
-    paddingTop: spacing.md,
+    paddingTop: spacing.xs,
     paddingBottom: spacing.lg,
+  },
+  brandHeader: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    marginBottom: spacing.md,
+  },
+  wordmark: {
+    color: colors.text,
+    fontSize: typography.brand + 3,
+    fontWeight: '800',
+    letterSpacing: -1,
   },
   notePill: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    marginTop: spacing.xxl,
+    marginTop: spacing.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: radii.pill,
     backgroundColor: colors.surface,
   },
   shortNotePill: {
-    marginTop: spacing.lg,
+    marginTop: spacing.sm,
   },
   noteDot: {
     width: 7,
@@ -181,12 +198,12 @@ const styles = StyleSheet.create({
   },
   headingBlock: {
     gap: spacing.sm,
-    marginTop: spacing.xxxl,
+    marginTop: spacing.xl,
     marginBottom: spacing.xl,
   },
   shortHeadingBlock: {
-    marginTop: spacing.xl,
-    marginBottom: spacing.lg,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
   },
   title: {
     color: colors.text,
