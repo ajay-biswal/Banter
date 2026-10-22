@@ -57,7 +57,6 @@ export default function TextField({
         <TextInput
           accessibilityLabel={accessibilityLabel ?? label}
           accessibilityHint={error ? `Error: ${error}` : undefined}
-          accessibilityState={{ invalid: Boolean(error) }}
           autoCapitalize={autoCapitalize}
           autoComplete={autoComplete}
           autoCorrect={false}
