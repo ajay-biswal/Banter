@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Banter",
+    "slug": "banter-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "banter",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.banter.mobile"
+    },
+    "android": {
+      "package": "com.banter.mobile"
+    }
+  }
+}
