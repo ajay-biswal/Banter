@@ -19,8 +19,8 @@ export default function UserInfoPanel({ user, onClose }: UserInfoPanelProps) {
 
   if (!user) {
     return (
-      <div className="hidden lg:flex w-[300px] bg-slate-900 border-l border-white/10 flex-shrink-0 items-center justify-center">
-        <p className="text-gray-500 text-sm">Select a conversation</p>
+      <div className="hidden lg:flex w-[300px] bg-white border-l border-violet-100 flex-shrink-0 items-center justify-center">
+        <p className="text-slate-400 text-sm">Select a conversation</p>
       </div>
     );
   }
@@ -36,17 +36,17 @@ export default function UserInfoPanel({ user, onClose }: UserInfoPanelProps) {
 
   return (
     <div
-      className={`hidden lg:flex flex-col bg-slate-900 border-l border-white/10 flex-shrink-0 transition-all duration-300 ease-in-out ${
+      className={`hidden lg:flex flex-col bg-white border-l border-violet-100 flex-shrink-0 transition-all duration-300 ease-in-out ${
         showPanel ? 'w-[300px]' : 'w-0'
       } overflow-hidden`}
     >
       <div className="w-[300px] flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-          <h3 className="text-white font-semibold text-sm">Profile</h3>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-violet-100">
+          <h3 className="text-slate-900 font-semibold text-sm">Profile</h3>
           <button
             onClick={() => setShowPanel(false)}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-slate-400 hover:text-violet-700 transition-colors"
             aria-label="Close panel"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -58,71 +58,71 @@ export default function UserInfoPanel({ user, onClose }: UserInfoPanelProps) {
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto">
           {/* Profile Section */}
-          <div className="p-6 flex flex-col items-center border-b border-white/10">
+          <div className="p-6 flex flex-col items-center border-b border-violet-100">
             {/* Avatar */}
             <div className="relative mb-4">
               <div
                 className={`w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-semibold ${
                   isOnline
-                    ? 'bg-gradient-to-br from-emerald-500 to-emerald-600'
-                    : 'bg-gradient-to-br from-slate-600 to-slate-700'
+                    ? 'bg-gradient-to-br from-cyan-500 to-teal-500'
+                    : 'bg-gradient-to-br from-violet-300 to-sky-300'
                 }`}
               >
                 {user.avatar || user.name.charAt(0).toUpperCase()}
               </div>
               {/* Online indicator */}
               {isOnline && (
-                <div className="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 rounded-full border-3 border-slate-900" />
+                <div className="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 rounded-full border-4 border-white" />
               )}
             </div>
 
             {/* Name */}
-            <h2 className="text-white font-bold text-lg mb-1">{user.name}</h2>
+            <h2 className="text-slate-900 font-bold text-lg mb-1">{user.name}</h2>
 
             {/* Status */}
             <div className="flex items-center gap-2">
               <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-gray-500'}`} />
-              <span className={`text-xs ${isOnline ? 'text-emerald-400' : 'text-gray-500'}`}>
+              <span className={`text-xs ${isOnline ? 'text-emerald-600' : 'text-slate-400'}`}>
                 {isOnline ? 'Online' : 'Offline'}
               </span>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="p-4 grid grid-cols-3 gap-2 border-b border-white/10">
-            <button className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all duration-200 group">
-              <svg className="w-5 h-5 text-purple-400 group-hover:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="p-4 grid grid-cols-3 gap-2 border-b border-violet-100">
+            <button className="flex flex-col items-center gap-1 p-3 rounded-lg bg-slate-50 hover:bg-violet-50 transition-all duration-200 group">
+              <svg className="w-5 h-5 text-violet-600 group-hover:text-violet-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
-              <span className="text-xs text-gray-400">Message</span>
+              <span className="text-xs text-slate-500">Message</span>
             </button>
             <button className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all duration-200 group">
               <svg className="w-5 h-5 text-gray-400 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
               </svg>
-              <span className="text-xs text-gray-400">Mute</span>
+              <span className="text-xs text-slate-500">Mute</span>
             </button>
             <button className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/5 hover:bg-red-500/10 transition-all duration-200 group">
               <svg className="w-5 h-5 text-gray-400 group-hover:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
               </svg>
-              <span className="text-xs text-gray-400">Block</span>
+              <span className="text-xs text-slate-500">Block</span>
             </button>
           </div>
 
           {/* Info Section */}
-          <div className="p-4 space-y-3 border-b border-white/10">
-            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Info</h4>
+          <div className="p-4 space-y-3 border-b border-violet-100">
+            <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Info</h4>
             
             {/* Email */}
             <div className="flex items-center gap-3">
-              <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-gray-500">Email</p>
-                <p className="text-sm text-white truncate">{user.email}</p>
+                <p className="text-sm text-slate-800 truncate">{user.email}</p>
               </div>
             </div>
 
@@ -134,7 +134,7 @@ export default function UserInfoPanel({ user, onClose }: UserInfoPanelProps) {
                 </svg>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-500">Role</p>
-                  <p className="text-sm text-white">{user.role}</p>
+                  <p className="text-sm text-slate-800">{user.role}</p>
                 </div>
               </div>
             )}
@@ -160,9 +160,9 @@ export default function UserInfoPanel({ user, onClose }: UserInfoPanelProps) {
               {sharedMedia.map((media) => (
                 <div
                   key={media.id}
-                  className="aspect-square rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer overflow-hidden"
+                  className="aspect-square rounded-xl bg-slate-50 hover:bg-violet-50 transition-colors cursor-pointer overflow-hidden"
                 >
-                  <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-indigo-500/20 flex items-center justify-center">
+                  <div className="w-full h-full bg-gradient-to-br from-violet-100 to-cyan-100 flex items-center justify-center">
                     <svg className="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>

@@ -199,15 +199,15 @@ export default function MessageInput() {
   };
 
   return (
-    <div className="sticky bottom-0 bg-slate-950/70 backdrop-blur-xl border-t border-white/10 px-4 py-4">
+    <div className="sticky bottom-0 bg-white/90 backdrop-blur-xl border-t border-violet-100 px-3 py-3 sm:px-5 sm:py-4">
       <form onSubmit={handleSubmit}>
         <div className="flex items-end gap-3">
           {/* Input Container with File Chips */}
           <div 
-            className={`flex-1 relative bg-slate-950 rounded-2xl border shadow-[0_10px_30px_rgba(0,0,0,0.6)] px-4 py-3 focus-within:border-purple-500/50 focus-within:shadow-[0_0_20px_rgba(139,92,246,0.15)] transition-all duration-300 ${
+            className={`flex-1 relative bg-white rounded-2xl border shadow-sm shadow-violet-950/5 px-4 py-3 focus-within:border-violet-400 focus-within:shadow-[0_0_0_4px_rgba(139,92,246,0.08)] transition-all duration-300 ${
               isDragging
-                ? 'border-purple-500 bg-purple-500/10'
-                : 'border-white/10'
+                ? 'border-violet-400 bg-violet-50'
+                : 'border-slate-200'
             }`}
             onDragEnter={(e) => {
               e.preventDefault();
@@ -243,12 +243,12 @@ export default function MessageInput() {
                     const isImageFile = file.file.type.startsWith('image/');
 
                     return (
-                      <div key={index} className="group relative bg-white/5 border border-white/10 rounded-lg p-2 pr-8 flex items-center gap-2 hover:bg-white/10 hover:border-white/20 transition-all duration-200 cursor-default">
+                      <div key={index} className="group relative bg-slate-50 border border-slate-200 rounded-lg p-2 pr-8 flex items-center gap-2 hover:bg-violet-50 hover:border-violet-200 transition-all duration-200 cursor-default">
                         {/* Remove Button */}
                         <button
                           type="button"
                           onClick={() => handleRemoveFile(index)}
-                          className="absolute top-1 right-1 text-gray-400 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                          className="absolute top-1 right-1 text-slate-400 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
                           aria-label="Remove file"
                         >
                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,8 +264,8 @@ export default function MessageInput() {
                             className="w-10 h-10 rounded object-cover flex-shrink-0"
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded bg-purple-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/30 transition-colors">
-                            <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-10 h-10 rounded bg-violet-100 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/30 transition-colors">
+                            <svg className="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                           </div>
@@ -276,15 +276,15 @@ export default function MessageInput() {
                           <p className="text-xs text-white font-medium truncate max-w-[120px]">
                             {file.file.name}
                           </p>
-                          <p className="text-[10px] text-gray-400">
+                          <p className="text-[10px] text-slate-500">
                             {(file.file.size / 1024).toFixed(1)} KB
                           </p>
                           
                           {/* Upload Progress */}
                           {file.uploading && (
-                            <div className="w-full bg-white/10 rounded-full h-1 mt-1">
+                            <div className="w-full bg-slate-100 rounded-full h-1 mt-1">
                               <div 
-                                className="bg-purple-500 h-1 rounded-full transition-all duration-300"
+                                className="bg-violet-500 h-1 rounded-full transition-all duration-300"
                                 style={{ width: `${file.progress}%` }}
                               />
                             </div>
@@ -302,7 +302,7 @@ export default function MessageInput() {
                 <button
                   type="button"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="text-gray-500 hover:text-yellow-400 transition-colors flex-shrink-0 pb-1 hover:scale-110 active:scale-95"
+                  className="text-slate-400 hover:text-amber-500 transition-colors flex-shrink-0 pb-1 hover:scale-110 active:scale-95"
                   aria-label="Add emoji"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,7 +319,7 @@ export default function MessageInput() {
                   onKeyDown={handleKeyDown}
                   disabled={!activeConversationId}
                   placeholder={activeConversationId ? 'Type a message...' : 'Select a conversation first'}
-                  className="flex-1 bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none disabled:cursor-not-allowed disabled:text-gray-500 resize-none px-2 py-1 max-h-[150px] overflow-y-auto leading-relaxed min-h-[20px]"
+                  className="flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none disabled:cursor-not-allowed disabled:text-slate-400 resize-none px-2 py-1 max-h-[150px] overflow-y-auto leading-relaxed min-h-[20px]"
                 />
 
                 {/* Attach file button */}

@@ -34,8 +34,8 @@ export default function MessageBubble({
 
   // Determine styling based on message status and sender
   const bubbleColor = isOwn 
-    ? 'bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-600 text-white hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] transition-shadow duration-200' 
-    : 'bg-slate-800/80 backdrop-blur-sm text-white border border-white/5';
+    ? 'bg-gradient-to-br from-violet-600 via-purple-600 to-fuchsia-600 text-white hover:shadow-[0_8px_24px_rgba(139,92,246,0.22)] transition-shadow duration-200' 
+    : 'bg-white text-slate-800 border border-slate-200';
   
   // Status-specific styling
   let statusStyle = '';
@@ -61,12 +61,12 @@ export default function MessageBubble({
       <div className={`flex flex-col ${isOwn ? 'ml-auto items-end' : 'items-start'}`} style={{ maxWidth: 'clamp(70%, 80%, 65%)' }}>
         {/* Sender name (for group chats) */}
         {showAvatar && senderName && !isOwn && (
-          <div className="text-xs text-purple-400 font-medium mb-1 ml-1">{senderName}</div>
+          <div className="text-xs text-violet-600 font-medium mb-1 ml-1">{senderName}</div>
         )}
         
         {/* Message bubble */}
         <div className={`${bubbleColor} ${statusStyle} px-4 py-2.5 shadow-lg ${
-          isOwn ? 'shadow-indigo-500/30' : 'shadow-black/20'
+          isOwn ? 'shadow-violet-500/20' : 'shadow-black/20'
         } hover:scale-[1.01] transition-all duration-200 ${
           // Adjust border radius for grouped messages - creates connected bubble effect
           isGrouped 
@@ -123,10 +123,10 @@ export default function MessageBubble({
                     href={attachment.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 p-3 bg-white/5 hover:bg-white/10 rounded-lg transition-all duration-200 group border border-white/10 hover:border-purple-500/30"
+                    className="flex items-center gap-2 p-3 bg-slate-50 hover:bg-violet-50 rounded-lg transition-all duration-200 group border border-slate-200 hover:border-violet-300"
                   >
-                    <div className="w-10 h-10 rounded bg-purple-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/30 transition-colors">
-                      <svg className="w-5 h-5 text-purple-400 group-hover:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="w-10 h-10 rounded bg-violet-100 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/30 transition-colors">
+                      <svg className="w-5 h-5 text-violet-600 group-hover:text-violet-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </div>
@@ -138,7 +138,7 @@ export default function MessageBubble({
                         </p>
                       )}
                     </div>
-                    <svg className="w-4 h-4 flex-shrink-0 opacity-60 group-hover:opacity-100 group-hover:text-purple-400 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 flex-shrink-0 opacity-60 group-hover:opacity-100 group-hover:text-violet-600 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
                   </a>
@@ -149,7 +149,7 @@ export default function MessageBubble({
           
           {/* Timestamp and status */}
           <div className={`text-[11px] mt-1.5 flex items-center justify-end gap-1 ${
-            isOwn ? 'text-white/60' : 'text-gray-500'
+            isOwn ? 'text-white/60' : 'text-slate-400'
           }`}>
             {/* Message status icons (sender only) */}
             {isOwn && message.status === 'sending' && (
@@ -175,7 +175,7 @@ export default function MessageBubble({
             )}
             {isOwn && message.status === 'read' && (
               <div className="flex -space-x-1">
-                <svg className="w-3 h-3 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                 </svg>
                 <svg className="w-3 h-3 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

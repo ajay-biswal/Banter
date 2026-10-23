@@ -143,12 +143,11 @@ export default function ChatLayout() {
   }, []);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-950">
+    <div className="flex h-dvh w-full overflow-hidden bg-[#f5f7ff] text-slate-800">
       {/* Left Sidebar - Mobile: Full screen when no chat, Tablet/Desktop: Always visible */}
       <div className={`
         w-full md:w-80 lg:w-80
-        border-r border-white/10
-        bg-[#020617]
+        border-r border-violet-100 bg-white
         flex flex-col
         flex-shrink-0
         ${activeConversationId ? 'hidden md:flex' : 'flex'}
@@ -183,11 +182,11 @@ export default function ChatLayout() {
       {/* Mobile Profile Drawer - Overlay */}
       {mobileShowProfile && activeConversationId && selectedUser && (
         <div 
-          className="fixed inset-0 z-50 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-50 bg-slate-950/35 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileShowProfile(false)}
         >
           <div 
-            className="absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-[#020617] shadow-lg overflow-y-auto"
+            className="absolute right-0 top-0 h-full w-80 max-w-[85vw] overflow-y-auto bg-white shadow-2xl shadow-violet-950/15"
             onClick={(e) => e.stopPropagation()}
           >
             <UserInfoPanel 

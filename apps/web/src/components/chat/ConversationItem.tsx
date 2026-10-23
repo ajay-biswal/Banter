@@ -31,16 +31,16 @@ export default function ConversationItem({ conversation, isActive, currentUserId
       <div className="flex items-center gap-3">
         {/* Avatar */}
         <div className="flex-shrink-0 relative">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold text-sm ${
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-white font-semibold text-sm ${
             isOnline 
-              ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' 
-              : 'bg-gradient-to-br from-slate-600 to-slate-700'
+              ? 'bg-gradient-to-br from-cyan-500 to-teal-500' 
+              : 'bg-gradient-to-br from-violet-300 to-sky-300'
           }`}>
             {otherParticipant?.name.charAt(0).toUpperCase()}
           </div>
           {/* Online indicator */}
           {isOnline && (
-            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-slate-900" />
+            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white" />
           )}
         </div>
         
@@ -48,17 +48,17 @@ export default function ConversationItem({ conversation, isActive, currentUserId
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-0.5">
             <h3 className={`font-semibold truncate ${
-              isActive ? 'text-white' : 'text-gray-200'
+              isActive ? 'text-violet-900' : 'text-slate-800'
             }`}>
               {otherParticipant?.name}
             </h3>
             {conversation.updatedAt && (
-              <span className="text-xs text-gray-500 flex-shrink-0 ml-2">
+              <span className="text-xs text-slate-400 flex-shrink-0 ml-2">
                 {new Date(conversation.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-400 truncate">
+          <p className="text-sm text-slate-500 truncate">
             {truncatedMessage}
           </p>
         </div>
@@ -66,7 +66,7 @@ export default function ConversationItem({ conversation, isActive, currentUserId
         {/* Unread badge */}
         {conversation.unreadCount > 0 && (
           <div className="flex-shrink-0">
-            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white bg-gradient-to-r from-pink-500 to-rose-500 rounded-full shadow-lg shadow-pink-500/30">
+            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 text-xs font-bold text-white bg-gradient-to-r from-violet-600 to-fuchsia-500 rounded-full shadow-md shadow-violet-500/20">
               {conversation.unreadCount}
             </span>
           </div>

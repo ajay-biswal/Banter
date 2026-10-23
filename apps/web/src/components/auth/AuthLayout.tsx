@@ -2,18 +2,17 @@ import { ReactNode } from 'react';
 
 interface AuthLayoutProps {
   children: ReactNode;
+  wide?: boolean;
 }
 
-export function AuthLayout({ children }: AuthLayoutProps) {
+export function AuthLayout({ children, wide = false }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 relative overflow-hidden p-4">
-      {/* Purple glow effect */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/30 rounded-full blur-3xl" />
-      
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-lg">
+    <main className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#fbfaff] px-4 py-8 text-slate-900 sm:px-6 lg:py-10">
+      <div aria-hidden="true" className="pointer-events-none absolute -left-28 -top-28 -z-10 h-80 w-80 rounded-full bg-violet-200/50 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-36 -right-20 -z-10 h-96 w-96 rounded-full bg-cyan-100/70 blur-3xl" />
+      <div className={wide ? 'relative z-10 w-full max-w-6xl' : 'relative z-10 w-full max-w-md'}>
         {children}
       </div>
-    </div>
+    </main>
   );
 }

@@ -29,30 +29,28 @@ export function AuthInput({
 }: AuthInputProps) {
   return (
     <div className={cn('space-y-2', className)}>
-      <label 
-        htmlFor={id} 
-        className="block text-xs uppercase tracking-wide text-gray-400"
-      >
+      <label htmlFor={id} className="block text-sm font-medium text-slate-700">
         {label}
       </label>
       <div className="relative">
-        {/* Left icon */}
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+        <div aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
           {icon}
         </div>
-        
-        {/* Input field */}
         <Input
           id={id}
+          name={id}
           type={type}
           value={value}
           onChange={onChange}
           placeholder={placeholder}
           required={required}
-          className="h-11 pl-10 pr-4 bg-slate-950 border-white/10 rounded-lg text-white placeholder:text-gray-600 focus-visible:border-purple-500/50 focus-visible:ring-purple-500/20"
+          autoComplete={id === 'email' ? 'email' : id === 'name' ? 'name' : id === 'password' ? 'current-password' : undefined}
+          className={cn(
+            'h-12 rounded-xl border-slate-200 bg-white pl-10 text-base text-slate-900 shadow-none placeholder:text-slate-400',
+            'focus-visible:border-emerald-500 focus-visible:ring-4 focus-visible:ring-emerald-500/15',
+            rightElement ? 'pr-11' : 'pr-4'
+          )}
         />
-        
-        {/* Right element (e.g., Forgot password link) */}
         {rightElement && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
             {rightElement}
