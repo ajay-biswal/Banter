@@ -48,10 +48,10 @@ export default function EmojiPicker({ onEmojiSelect, isOpen, onClose }: EmojiPic
       ref={pickerRef}
       className="absolute bottom-16 left-0 z-50 animate-in fade-in zoom-in-95 duration-200"
     >
-      <div className="rounded-xl border border-white/10 shadow-lg shadow-black/40 overflow-hidden">
+      <div className="rounded-xl border border-violet-100 shadow-xl shadow-violet-950/15 overflow-hidden">
         <EmojiPickerReact
           onEmojiClick={handleEmojiClick}
-          theme={Theme.DARK}
+          theme={Theme.LIGHT}
           previewConfig={{
             showPreview: false,
           }}
