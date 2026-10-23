@@ -124,7 +124,7 @@ export default function MessageList() {
   }).filter(Boolean);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-slate-950 to-slate-950/90">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#f8f7ff] via-white to-[#f2fbff]">
       {/* Centered conversation lane - constrained width for large screens */}
       <div className="w-full max-w-4xl mx-auto px-3 md:px-6 py-4 pb-24">
         <div className="space-y-0.5">
@@ -133,7 +133,7 @@ export default function MessageList() {
               {/* Date Separator */}
               {group.showLabel && (
                 <div className="flex justify-center my-4 animate-in fade-in duration-200">
-                  <div className="bg-slate-800/60 backdrop-blur-sm text-gray-400 text-xs font-medium px-4 py-1.5 rounded-full shadow-lg shadow-black/10">
+                  <div className="bg-white/90 backdrop-blur-sm text-slate-500 text-xs font-medium px-4 py-1.5 rounded-full border border-violet-100 shadow-sm shadow-violet-950/5">
                     {group.dateLabel}
                   </div>
                 </div>
