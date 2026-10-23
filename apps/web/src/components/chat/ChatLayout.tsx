@@ -171,7 +171,7 @@ export default function ChatLayout() {
 
       {/* Right User Info Panel - Desktop only */}
       {activeConversationId && selectedUser && showInfoPanel && (
-        <div className="hidden lg:flex w-80 border-l border-white/10 bg-[#020617] flex-shrink-0">
+        <div className="hidden lg:flex w-80 border-l border-violet-100 bg-white flex-shrink-0">
           <UserInfoPanel 
             user={selectedUser}
             onClose={() => setShowInfoPanel(false)}
