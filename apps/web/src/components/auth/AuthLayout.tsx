@@ -6,14 +6,14 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 relative overflow-hidden p-4">
-      {/* Purple glow effect */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/30 rounded-full blur-3xl" />
-      
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-lg">
+    <main className="relative isolate flex min-h-screen items-center justify-center overflow-hidden bg-[#f6fbf8] px-4 py-10 text-slate-900 sm:px-6">
+      {/* Quiet, decorative shapes add warmth without competing with the form. */}
+      <div aria-hidden="true" className="pointer-events-none absolute -left-28 -top-28 -z-10 h-80 w-80 rounded-full bg-emerald-100/80 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute -bottom-36 -right-20 -z-10 h-96 w-96 rounded-full bg-teal-100/70 blur-3xl" />
+      <div aria-hidden="true" className="pointer-events-none absolute right-[12%] top-[15%] -z-10 h-16 w-16 rounded-[1.5rem] rotate-12 border border-emerald-200/70" />
+      <div className="relative z-10 w-full max-w-md">
         {children}
       </div>
-    </div>
+    </main>
   );
 }
