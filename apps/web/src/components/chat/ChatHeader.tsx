@@ -29,13 +29,13 @@ export default function ChatHeader({ onToggleInfo, showInfo, onShowProfile }: Ch
   const isOnline = otherParticipant ? userPresence[otherParticipant._id] : false;
 
   return (
-    <div className="bg-slate-900/50 backdrop-blur-sm border-b border-white/5 px-3 md:px-6 py-3 md:py-4">
+    <div className="bg-white/90 backdrop-blur-sm border-b border-violet-100 px-3 md:px-6 py-3 md:py-4">
       <div className="flex items-center justify-between">
         {/* Left: Back Button (Mobile) + Avatar + Info */}
         <div className="flex items-center gap-2 md:gap-3">
           {/* Back Button - Mobile Only */}
           <button
-            className="md:hidden p-2 min-h-10 min-w-10 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+            className="md:hidden p-2 min-h-10 min-w-10 rounded-lg text-slate-500 hover:text-violet-700 hover:bg-violet-50 transition-all duration-200"
             onClick={() => window.history.back()}
             aria-label="Back to conversations"
           >
@@ -48,26 +48,26 @@ export default function ChatHeader({ onToggleInfo, showInfo, onShowProfile }: Ch
           <div className="relative">
             <div className={`w-9 h-9 md:w-10 md:h-10 rounded-full flex items-center justify-center text-white font-semibold ${
               isOnline 
-                ? 'bg-gradient-to-br from-emerald-500 to-emerald-600' 
-                : 'bg-gradient-to-br from-slate-600 to-slate-700'
+                ? 'bg-gradient-to-br from-cyan-500 to-teal-500' 
+                : 'bg-gradient-to-br from-violet-300 to-sky-300'
             }`}>
               {otherParticipant?.name.charAt(0).toUpperCase()}
             </div>
             {/* Online indicator */}
             {isOnline && (
-              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-3.5 md:h-3.5 bg-emerald-500 rounded-full border-2 border-slate-900" />
+              <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 md:w-3.5 md:h-3.5 bg-emerald-500 rounded-full border-2 border-white" />
             )}
           </div>
           
           {/* User info */}
           <div>
-            <h3 className="text-white font-semibold text-sm md:text-base">{otherParticipant?.name}</h3>
+            <h3 className="text-slate-900 font-semibold text-sm md:text-base">{otherParticipant?.name}</h3>
             {isTyping ? (
-              <p className="text-xs text-purple-400 animate-pulse">typing...</p>
+              <p className="text-xs text-violet-600 animate-pulse">typing...</p>
             ) : isOnline ? (
-              <p className="text-xs text-emerald-400">online</p>
+              <p className="text-xs text-emerald-600">online</p>
             ) : (
-              <p className="text-xs text-gray-500">offline</p>
+              <p className="text-xs text-slate-400">offline</p>
             )}
           </div>
         </div>
@@ -99,7 +99,7 @@ export default function ChatHeader({ onToggleInfo, showInfo, onShowProfile }: Ch
             onClick={() => onShowProfile ? onShowProfile() : onToggleInfo()}
             className={`p-2 min-h-10 min-w-10 rounded-lg transition-all duration-200 ${
               showInfo 
-                ? 'text-purple-400 bg-purple-500/10 hover:bg-purple-500/20' 
+                ? 'text-violet-700 bg-violet-100 hover:bg-violet-200' 
                 : 'text-gray-400 hover:text-white hover:bg-white/5'
             }`}
             aria-label="Toggle conversation info"
