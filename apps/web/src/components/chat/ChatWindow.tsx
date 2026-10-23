@@ -39,15 +39,15 @@ export default function ChatWindow({ showInfoPanel, onToggleInfo, onShowProfile 
 
   if (!activeConversationId) {
     return (
-      <div className="h-full flex items-center justify-center bg-slate-950">
-        <div className="text-center">
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-slate-900 flex items-center justify-center">
-            <svg className="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="relative flex h-full items-center justify-center overflow-hidden bg-gradient-to-br from-[#f9f8ff] via-white to-[#effcff]">
+        <div className="relative mx-4 max-w-md text-center">
+          <div className="w-24 h-24 mx-auto mb-6 rounded-[2rem] bg-gradient-to-br from-violet-100 to-cyan-100 shadow-inner shadow-white flex items-center justify-center">
+            <svg className="w-12 h-12 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-300 mb-2">Welcome to Banter</h2>
-          <p className="text-gray-500">Select a conversation to start chatting</p>
+          <h2 className="text-2xl font-semibold tracking-tight text-slate-900 mb-2">Welcome to Banter</h2>
+          <p className="text-slate-500">Select a conversation to start chatting</p>
         </div>
       </div>
     );
