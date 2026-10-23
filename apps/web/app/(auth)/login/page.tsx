@@ -36,11 +36,11 @@ export default function LoginPage() {
   return (
     <AuthLayout wide>
       <div className="grid overflow-hidden rounded-[2rem] border border-violet-100/80 bg-white shadow-[0_32px_100px_-42px_rgba(76,29,149,0.32)] lg:min-h-[650px] lg:grid-cols-[1fr_0.92fr]">
-        <section className="relative isolate flex min-h-[260px] flex-col justify-between overflow-hidden bg-gradient-to-br from-violet-700 via-purple-600 to-fuchsia-500 p-7 text-white sm:p-10 lg:min-h-[650px] lg:p-12">
+        <section className="relative isolate flex min-h-[260px] flex-col justify-between overflow-hidden bg-gradient-to-br from-sky-600 via-cyan-500 to-teal-400 p-7 text-white sm:p-10 lg:min-h-[650px] lg:p-12">
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
             <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full border border-white/20" />
             <div className="absolute -right-5 -top-5 h-36 w-36 rounded-full border border-white/20" />
-            <div className="absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-fuchsia-400/30 blur-2xl" />
+            <div className="absolute -bottom-24 -left-16 h-72 w-72 rounded-full bg-teal-300/30 blur-2xl" />
             <div className="absolute left-[18%] top-[42%] h-32 w-32 rotate-12 rounded-[2.5rem] border border-white/20 bg-white/5" />
             <div className="absolute bottom-[20%] right-[12%] h-20 w-20 -rotate-12 rounded-full bg-cyan-300/20 blur-sm" />
           </div>
@@ -49,29 +49,29 @@ export default function LoginPage() {
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 ring-1 ring-white/20">
               <MessageCircle className="h-5 w-5" aria-hidden="true" />
             </span>
-            Banter<span className="text-cyan-200">.</span>
+            Banter<span className="text-amber-200">.</span>
           </Link>
 
           <div className="relative z-10 mx-auto my-8 flex w-full max-w-md flex-1 flex-col justify-center lg:my-10">
-            <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-violet-100">
+            <p className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-cyan-50">
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               Your people, your space
             </p>
             <h1 className="max-w-sm text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl">
-              Make room for <span className="text-cyan-200">good</span> conversations.
+              Make room for <span className="text-amber-200">good</span> conversations.
             </h1>
-            <p className="mt-5 max-w-sm text-base leading-7 text-violet-100 sm:text-lg">
+            <p className="mt-5 max-w-sm text-base leading-7 text-cyan-50 sm:text-lg">
               Catch up, share a moment, and stay close to the people who make your day.
             </p>
 
             <div aria-hidden="true" className="relative mt-9 h-40 max-w-sm sm:h-48">
-              <div className="absolute left-0 top-2 flex h-20 w-28 rotate-[-7deg] items-center justify-center rounded-[1.75rem] rounded-bl-md bg-cyan-300 text-violet-900 shadow-xl shadow-violet-950/15 sm:h-24 sm:w-36">
+              <div className="absolute left-0 top-2 flex h-20 w-28 rotate-[-7deg] items-center justify-center rounded-[1.75rem] rounded-bl-md bg-amber-300 text-sky-900 shadow-xl shadow-sky-950/15 sm:h-24 sm:w-36">
                 <MessagesSquare className="h-9 w-9 sm:h-11 sm:w-11" strokeWidth={1.7} />
               </div>
-              <div className="absolute left-[30%] top-10 flex h-20 w-28 rotate-[7deg] items-center justify-center rounded-[1.75rem] rounded-br-md bg-white text-fuchsia-600 shadow-xl shadow-violet-950/20 sm:h-24 sm:w-36">
+              <div className="absolute left-[30%] top-10 flex h-20 w-28 rotate-[7deg] items-center justify-center rounded-[1.75rem] rounded-br-md bg-white text-teal-700 shadow-xl shadow-sky-950/20 sm:h-24 sm:w-36">
                 <span className="flex items-center gap-2">
-                  <span className="h-2.5 w-2.5 rounded-full bg-fuchsia-400" />
-                  <span className="h-2.5 w-2.5 rounded-full bg-violet-400" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-teal-300" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-cyan-400" />
                   <span className="h-2.5 w-2.5 rounded-full bg-cyan-400" />
                 </span>
               </div>
@@ -89,10 +89,10 @@ export default function LoginPage() {
         <section className="flex items-center justify-center bg-white px-5 py-9 sm:px-10 sm:py-12 lg:px-12">
           <div className="w-full max-w-md space-y-7">
             <header>
-              <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-700 lg:hidden">
+              <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-100 text-sky-700 lg:hidden">
                 <MessageCircle className="h-5 w-5" aria-hidden="true" />
               </div>
-              <p className="mb-2 text-sm font-semibold text-violet-700">WELCOME BACK</p>
+              <p className="mb-2 text-sm font-semibold text-sky-700">WELCOME BACK</p>
               <h2 className="text-3xl font-semibold tracking-tight text-slate-950">Good to see you.</h2>
               <p className="mt-2 text-sm leading-6 text-slate-500">Sign in to pick up where your conversations left off.</p>
             </header>
@@ -129,7 +129,7 @@ export default function LoginPage() {
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="rounded-md p-1 text-slate-400 transition-colors hover:text-violet-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500"
+                          className="rounded-md p-1 text-slate-400 transition-colors hover:text-sky-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
                           aria-label={showPassword ? 'Hide password' : 'Show password'}
                         >
                           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -137,7 +137,7 @@ export default function LoginPage() {
                       }
                     />
                     <div className="flex justify-end">
-                      <Link href="/forgot-password" className="rounded-sm text-sm font-semibold text-violet-700 transition-colors hover:text-fuchsia-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+                      <Link href="/forgot-password" className="rounded-sm text-sm font-semibold text-sky-700 transition-colors hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500">
                         Forgot password?
                       </Link>
                     </div>
@@ -148,7 +148,7 @@ export default function LoginPage() {
                     loading={loading}
                     loadingText="Signing you in..."
                     icon={<ArrowRight className="h-4 w-4" />}
-                    className="bg-gradient-to-r from-violet-600 to-fuchsia-600 shadow-violet-900/15 hover:from-violet-700 hover:to-fuchsia-700 focus-visible:ring-violet-500/30"
+                    className="bg-gradient-to-r from-sky-500 to-teal-500 shadow-violet-900/15 hover:from-sky-600 hover:to-teal-600 focus-visible:ring-sky-500/30"
                   >
                     Sign in
                   </AuthButton>
@@ -158,7 +158,7 @@ export default function LoginPage() {
 
             <p className="text-center text-sm text-slate-600">
               New to Banter?{' '}
-              <Link href="/register" className="font-semibold text-violet-700 transition-colors hover:text-fuchsia-700 focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500">
+              <Link href="/register" className="font-semibold text-sky-700 transition-colors hover:text-teal-700 focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500">
                 Create an account
               </Link>
             </p>
