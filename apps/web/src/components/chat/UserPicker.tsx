@@ -85,13 +85,13 @@ export default function UserPicker({ isOpen, onClose }: UserPickerProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[80vh] flex flex-col">
-        <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+    <div className="fixed inset-0 bg-slate-950/35 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl border border-violet-100 shadow-2xl shadow-violet-950/20 w-full max-w-md max-h-[80vh] flex flex-col">
+        <div className="p-4 border-b border-violet-100 flex justify-between items-center">
           <h2 className="text-lg font-semibold">Start New Chat</h2>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-slate-400 hover:text-violet-700"
           >
             ✕
           </button>
@@ -103,15 +103,15 @@ export default function UserPicker({ isOpen, onClose }: UserPickerProps) {
             placeholder="Search users..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full border border-slate-200 rounded-xl px-4 py-2 focus:outline-none focus:ring-4 focus:ring-violet-500/10 focus:border-violet-400"
           />
         </div>
         
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
-            <div className="p-4 text-center text-gray-500">Loading users...</div>
+            <div className="p-4 text-center text-slate-500">Loading users...</div>
           ) : error ? (
-            <div className="p-4 text-center text-red-500">{error}</div>
+            <div className="p-4 text-center text-rose-600">{error}</div>
           ) : filteredUsers.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
               {users.length === 0 ? 'No users found' : 'No matching users'}
